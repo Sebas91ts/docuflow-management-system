@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env
+venv/
+.venv/
+env/
+ENV/
+
+# FastAPI / logs
+*.log
+
+# Node / React
+node_modules/
+dist/
+build/
+.env.local
+.env.development
+.env.production
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PostgreSQL / Docker
+*.sql.backup
