@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../hooks/useAuth'
 
 function LoginForm() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -26,6 +28,7 @@ function LoginForm() {
 
     try {
       await login(formData)
+      navigate('/dashboard', { replace: true })
     } catch (requestError) {
       const detail = requestError.response?.data?.detail
       setError(detail ?? 'No se pudo iniciar sesion')
