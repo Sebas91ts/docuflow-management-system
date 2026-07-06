@@ -14,12 +14,16 @@ const navigationItems = [
   { label: 'Resumen', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Documentos', to: '/dashboard/documents', icon: FileText },
   { label: 'Pendientes', to: '/dashboard/pending', icon: Inbox },
-  { label: 'Usuarios', to: '/dashboard/users', icon: Users },
   { label: 'Auditoria', to: '/dashboard/audit', icon: ScrollText },
+]
+
+const adminNavigationItems = [
+  { label: 'Usuarios', to: '/dashboard/users', icon: Users },
 ]
 
 function DashboardLayout() {
   const { currentUser, logout } = useAuth()
+  const isAdmin = currentUser?.role === 'admin'
 
   return (
     <div className="flex min-h-screen bg-[var(--color-page)] text-[var(--color-text)]">
@@ -51,6 +55,33 @@ function DashboardLayout() {
               </NavLink>
             ))}
           </div>
+
+          {isAdmin ? (
+            <div className="mt-6">
+              <p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                Administracion
+              </p>
+              <div className="mt-2 space-y-1">
+                {adminNavigationItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      [
+                        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition',
+                        isActive
+                          ? 'bg-[var(--color-primary)] text-white'
+                          : 'text-[var(--color-text)] hover:bg-[var(--color-primary-soft)]',
+                      ].join(' ')
+                    }
+                  >
+                    <item.icon size={18} strokeWidth={2.2} className="shrink-0" />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </nav>
 
         <div className="border-t border-[var(--color-border)] px-4 py-4">

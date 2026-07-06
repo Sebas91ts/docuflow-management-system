@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 
+import AdminRoute from './AdminRoute'
 import ProtectedRoute from './ProtectedRoute'
 import PublicRoute from './PublicRoute'
 import LoginPage from '../pages/LoginPage'
@@ -22,8 +23,10 @@ function AppRouter() {
           <Route index element={<DashboardHomePage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="pending" element={<PendingPage />} />
-          <Route path="users" element={<UsersPage />} />
           <Route path="audit" element={<AuditPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
 

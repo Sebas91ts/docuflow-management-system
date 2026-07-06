@@ -56,3 +56,9 @@ class UserService:
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def activate_user(self, user: User) -> User:
+        user.is_active = True
+        self.db.commit()
+        self.db.refresh(user)
+        return user

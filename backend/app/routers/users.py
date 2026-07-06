@@ -98,3 +98,25 @@ def deactivate_user(
         )
 
     return service.deactivate_user(user)
+
+# active user
+@router.patch(
+    "/{user_id}/activate",
+    response_model=UserRead,
+    summary="Activar usuario",
+    description="Activa un usuario para permitir su inicio de sesion. Solo administradores.",
+)
+def activate_user(
+    user_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    service = UserService(db)
+    user = service.get_by_id(user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado",
+        )
+
+    return service.activate_user(user)
