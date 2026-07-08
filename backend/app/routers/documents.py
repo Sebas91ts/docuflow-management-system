@@ -1,13 +1,15 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.user import User
 from app.routers.deps import get_current_user
-from app.schemas.document import DocumentCreate, DocumentRead, DocumentUpdate
+from app.schemas.document import DocumentRead, DocumentUpdate
+from app.schemas.document import DocumentCreate
 from app.services.document_service import DocumentService
+from app.services.document_workflow_service import DocumentWorkflowService
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -34,13 +36,26 @@ def get_document(
 
 @router.post("", response_model=DocumentRead, status_code=status.HTTP_201_CREATED, summary="Crear documento")
 def create_document(
-    payload: DocumentCreate,
+    title: str = Form(...),
+    description: str | None = Form(default=None),
+    current_responsible_id: uuid.UUID | None = Form(default=None),
+    submission_mode: str = Form(default="register"),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    service = DocumentService(db)
+    payload = DocumentCreate(
+        title=title,
+        description=description,
+        current_responsible_id=current_responsible_id,
+    )
     try:
-        return service.create(payload, current_user.id)
+        return DocumentWorkflowService(db).create_with_file(
+            payload=payload,
+            uploaded_by_id=current_user.id,
+            file=file,
+            submission_mode=submission_mode,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 

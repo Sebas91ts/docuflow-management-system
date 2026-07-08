@@ -69,3 +69,11 @@ class DocumentCodeResponse(BaseModel):
 
 class DocumentStatusResponse(BaseModel):
     status: str = DocumentConstants.DOCUMENT_STATUS_REGISTERED
+
+
+class DocumentFileUploadResponse(BaseModel):
+    file_id: str
+    file_name: str
+    web_view_link: str
+    mime_type: str | None
+    file_size: int | None

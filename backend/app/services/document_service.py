@@ -76,14 +76,14 @@ class DocumentService:
         if user_exists is None:
             raise ValueError("El usuario responsable no existe")
 
-    def create(self, payload: DocumentCreate, uploaded_by_id) -> Document:
+    def create(self, payload: DocumentCreate, uploaded_by_id, status: str | None = None) -> Document:
         self._ensure_user_exists(payload.current_responsible_id)
 
         document = Document(
             code=self.generate_code(),
             title=payload.title,
             description=payload.description,
-            status=DocumentConstants.DOCUMENT_STATUS_REGISTERED,
+            status=status or DocumentConstants.DOCUMENT_STATUS_REGISTERED,
             drive_file_id=payload.drive_file_id,
             drive_file_name=payload.drive_file_name,
             drive_web_view_link=payload.drive_web_view_link,
