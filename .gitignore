@@ -13,6 +13,7 @@ storage/
 
 # FastAPI / logs
 *.log
+backend/credentials.json
 
 # Node / React
 node_modules/

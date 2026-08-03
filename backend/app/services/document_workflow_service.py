@@ -3,17 +3,24 @@ from __future__ import annotations
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.constants import DocumentConstants
 from app.schemas.document import DocumentCreate
+from app.services.document_drive_storage_service import DocumentDriveStorageService
 from app.services.document_file_storage_service import DocumentFileStorageService
 from app.services.document_service import DocumentService
 
 
 class DocumentWorkflowService:
-    def __init__(self, db: Session, storage_service: DocumentFileStorageService | None = None):
+    def __init__(self, db: Session, storage_service=None):
         self.db = db
-        self.storage_service = storage_service or DocumentFileStorageService()
+        self.storage_service = storage_service or self._resolve_storage_service()
         self.document_service = DocumentService(db)
+
+    def _resolve_storage_service(self):
+        if settings.GOOGLE_DRIVE_STORAGE_MODE.lower() == "drive":
+            return DocumentDriveStorageService()
+        return DocumentFileStorageService()
 
     def create_with_file(
         self,
@@ -43,5 +50,5 @@ class DocumentWorkflowService:
             )
             return self.document_service.create(document_payload, uploaded_by_id, status=status)
         except Exception:
-            self.storage_service.remove(stored_file.web_view_link)
+            self.storage_service.remove(getattr(stored_file, "storage_ref", stored_file.web_view_link))
             raise

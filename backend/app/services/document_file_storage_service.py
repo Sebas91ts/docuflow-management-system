@@ -15,6 +15,7 @@ class StoredDocumentFile:
     web_view_link: str
     mime_type: str | None
     file_size: int | None
+    storage_ref: str
 
 
 class DocumentFileStorageService:
@@ -51,9 +52,10 @@ class DocumentFileStorageService:
             web_view_link=str(target_path.as_posix()),
             mime_type=file.content_type,
             file_size=size,
+            storage_ref=str(target_path.as_posix()),
         )
 
-    def remove(self, web_view_link: str | Path) -> None:
-        target_path = Path(web_view_link)
+    def remove(self, storage_ref: str | Path) -> None:
+        target_path = Path(storage_ref)
         if target_path.exists():
             target_path.unlink()
