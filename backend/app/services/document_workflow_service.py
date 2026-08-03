@@ -37,6 +37,7 @@ class DocumentWorkflowService:
                 "drive_file_id": stored_file.file_id,
                 "drive_file_name": stored_file.file_name,
                 "drive_web_view_link": stored_file.web_view_link,
+                "drive_folder_id": getattr(stored_file, "folder_id", None),
                 "mime_type": stored_file.mime_type,
                 "file_size": stored_file.file_size,
             }

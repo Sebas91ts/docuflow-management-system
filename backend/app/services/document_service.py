@@ -87,6 +87,7 @@ class DocumentService:
             drive_file_id=payload.drive_file_id,
             drive_file_name=payload.drive_file_name,
             drive_web_view_link=payload.drive_web_view_link,
+            drive_folder_id=payload.drive_folder_id,
             mime_type=payload.mime_type,
             file_size=payload.file_size,
             uploaded_by_id=uploaded_by_id,

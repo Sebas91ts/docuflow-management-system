@@ -28,6 +28,7 @@ class Document(Base):
     drive_file_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     drive_file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     drive_web_view_link: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    drive_folder_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
     file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     uploaded_by_id: Mapped[uuid.UUID] = mapped_column(

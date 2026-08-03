@@ -21,6 +21,7 @@ class DocumentBase(BaseModel):
     drive_file_id: str | None = Field(default=None, max_length=255)
     drive_file_name: str | None = Field(default=None, max_length=255)
     drive_web_view_link: str | None = Field(default=None, max_length=500)
+    drive_folder_id: str | None = Field(default=None, max_length=255)
     mime_type: str | None = Field(default=None, max_length=120)
     file_size: int | None = None
 
@@ -37,6 +38,7 @@ class DocumentUpdate(BaseModel):
     drive_file_id: str | None = Field(default=None, max_length=255)
     drive_file_name: str | None = Field(default=None, max_length=255)
     drive_web_view_link: str | None = Field(default=None, max_length=500)
+    drive_folder_id: str | None = Field(default=None, max_length=255)
     mime_type: str | None = Field(default=None, max_length=120)
     file_size: int | None = None
 
@@ -52,6 +54,7 @@ class DocumentRead(BaseModel):
     drive_file_id: str | None
     drive_file_name: str | None
     drive_web_view_link: str | None
+    drive_folder_id: str | None
     mime_type: str | None
     file_size: int | None
     uploaded_by_id: uuid.UUID

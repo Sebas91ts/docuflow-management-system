@@ -13,6 +13,7 @@ class StoredDocumentFile:
     file_id: str
     file_name: str
     web_view_link: str
+    folder_id: str | None
     mime_type: str | None
     file_size: int | None
     storage_ref: str
@@ -50,6 +51,7 @@ class DocumentFileStorageService:
             file_id=file_id,
             file_name=stored_name,
             web_view_link=str(target_path.as_posix()),
+            folder_id=None,
             mime_type=file.content_type,
             file_size=size,
             storage_ref=str(target_path.as_posix()),

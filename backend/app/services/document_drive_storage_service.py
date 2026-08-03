@@ -162,9 +162,9 @@ class DocumentDriveStorageService:
             file_id=created["id"],
             file_name=created["name"],
             web_view_link=created.get("webViewLink", ""),
+            folder_id=target_folder_id,
             mime_type=created.get("mimeType"),
             file_size=int(created["size"]) if created.get("size") else None,
-            folder_id=target_folder_id,
         )
 
     def remove(self, web_view_link: str | Path) -> None:
