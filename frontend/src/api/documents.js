@@ -1,7 +1,19 @@
 import apiClient from './client'
 
-export async function getDocuments() {
-  const { data } = await apiClient.get('/documents')
+export async function getDocuments(params = {}) {
+  const { data } = await apiClient.get('/documents', { params })
+  return data
+}
+
+export async function getDocument(id) {
+  const { data } = await apiClient.get(`/documents/${id}`)
+  return data
+}
+
+export async function getFolders(parentId = null) {
+  const { data } = await apiClient.get('/documents/folder', {
+    params: parentId ? { parent_id: parentId } : {},
+  })
   return data
 }
 

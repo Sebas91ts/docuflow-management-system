@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, or_
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import Session
 
@@ -15,17 +16,65 @@ class DocumentService:
     def __init__(self, db: Session):
         self.db = db
 
-    def list_documents(self) -> list[Document]:
-        return (
+    def list_documents(
+        self,
+        *,
+        search: str | None = None,
+        status: str | None = None,
+        uploaded_by: str | None = None,
+        current_responsible: str | None = None,
+        folder_id=None,
+        created_from=None,
+        created_to=None,
+    ) -> list[Document]:
+        uploaded_by_user = aliased(User)
+        responsible_user = aliased(User)
+        query = (
             self.db.query(Document)
             .options(
                 joinedload(Document.uploaded_by),
                 joinedload(Document.current_responsible),
+                joinedload(Document.folder),
             )
+            .outerjoin(uploaded_by_user, Document.uploaded_by_id == uploaded_by_user.id)
+            .outerjoin(responsible_user, Document.current_responsible_id == responsible_user.id)
             .filter(Document.deleted_at.is_(None))
-            .order_by(desc(Document.created_at))
-            .all()
         )
+
+        if search:
+            pattern = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    Document.title.ilike(pattern),
+                    Document.description.ilike(pattern),
+                )
+            )
+        if status:
+            query = query.filter(Document.status == status)
+        if uploaded_by:
+            uploaded_by_pattern = f"%{uploaded_by.strip()}%"
+            query = query.filter(
+                or_(
+                    uploaded_by_user.full_name.ilike(uploaded_by_pattern),
+                    uploaded_by_user.username.ilike(uploaded_by_pattern),
+                )
+            )
+        if current_responsible:
+            responsible_pattern = f"%{current_responsible.strip()}%"
+            query = query.filter(
+                or_(
+                    responsible_user.full_name.ilike(responsible_pattern),
+                    responsible_user.username.ilike(responsible_pattern),
+                )
+            )
+        if folder_id:
+            query = query.filter(Document.folder_id == folder_id)
+        if created_from:
+            query = query.filter(Document.created_at >= created_from)
+        if created_to:
+            query = query.filter(Document.created_at <= created_to)
+
+        return query.order_by(desc(Document.created_at)).all()
 
     def get_by_id(self, document_id) -> Document | None:
         return (
@@ -119,3 +168,11 @@ class DocumentService:
         self.db.commit()
         self.db.refresh(document)
         return document
+
+    #FOLDERS
+    def list_folders(self, parent_id=None) -> list[DocumentFolder]:
+        query = self.db.query(DocumentFolder).order_by(DocumentFolder.path.asc())
+        if parent_id is not None:
+            query = query.filter(DocumentFolder.parent_id == parent_id)
+
+        return query.all()

@@ -98,3 +98,7 @@ class DocumentFolderRead(BaseModel):
     drive_folder_id: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class DocumentFolderNode(DocumentFolderRead):
+    documents_count: int = 0
