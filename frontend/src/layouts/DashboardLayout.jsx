@@ -12,7 +12,8 @@ import { useAuth } from '../hooks/useAuth'
 
 const navigationItems = [
   { label: 'Resumen', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Documentos', to: '/dashboard/documents', icon: FileText },
+  { label: 'Crear documento', to: '/dashboard/documents/new', icon: FileText },
+  { label: 'Ver documentos', to: '/dashboard/documents', icon: FileText },
   { label: 'Pendientes', to: '/dashboard/pending', icon: Inbox },
   { label: 'Auditoria', to: '/dashboard/audit', icon: ScrollText }
 ]
@@ -44,7 +45,7 @@ function DashboardLayout() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/dashboard'}
+                end
                 className={({ isActive }) =>
                   [
                     'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition',
@@ -70,6 +71,7 @@ function DashboardLayout() {
                   <NavLink
                     key={item.to}
                     to={item.to}
+                    end
                     className={({ isActive }) =>
                       [
                         'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition',

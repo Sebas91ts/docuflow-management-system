@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.constants import DocumentConstants
 from app.models.document import Document
+from app.models.document_folder import DocumentFolder
 from app.models.user import User
 from app.schemas.document import DocumentCreate, DocumentUpdate
 
@@ -88,6 +89,8 @@ class DocumentService:
             drive_file_name=payload.drive_file_name,
             drive_web_view_link=payload.drive_web_view_link,
             drive_folder_id=payload.drive_folder_id,
+            drive_folder_path=payload.drive_folder_path,
+            folder_id=payload.folder_id,
             mime_type=payload.mime_type,
             file_size=payload.file_size,
             uploaded_by_id=uploaded_by_id,

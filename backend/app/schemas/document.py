@@ -22,6 +22,8 @@ class DocumentBase(BaseModel):
     drive_file_name: str | None = Field(default=None, max_length=255)
     drive_web_view_link: str | None = Field(default=None, max_length=500)
     drive_folder_id: str | None = Field(default=None, max_length=255)
+    drive_folder_path: str | None = Field(default=None, max_length=500)
+    folder_id: uuid.UUID | None = None
     mime_type: str | None = Field(default=None, max_length=120)
     file_size: int | None = None
 
@@ -39,6 +41,8 @@ class DocumentUpdate(BaseModel):
     drive_file_name: str | None = Field(default=None, max_length=255)
     drive_web_view_link: str | None = Field(default=None, max_length=500)
     drive_folder_id: str | None = Field(default=None, max_length=255)
+    drive_folder_path: str | None = Field(default=None, max_length=500)
+    folder_id: uuid.UUID | None = None
     mime_type: str | None = Field(default=None, max_length=120)
     file_size: int | None = None
 
@@ -55,6 +59,8 @@ class DocumentRead(BaseModel):
     drive_file_name: str | None
     drive_web_view_link: str | None
     drive_folder_id: str | None
+    drive_folder_path: str | None
+    folder_id: uuid.UUID | None
     mime_type: str | None
     file_size: int | None
     uploaded_by_id: uuid.UUID
@@ -80,3 +86,15 @@ class DocumentFileUploadResponse(BaseModel):
     web_view_link: str
     mime_type: str | None
     file_size: int | None
+
+
+class DocumentFolderRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    parent_id: uuid.UUID | None
+    name: str
+    path: str
+    drive_folder_id: str | None
+    created_at: datetime
+    updated_at: datetime

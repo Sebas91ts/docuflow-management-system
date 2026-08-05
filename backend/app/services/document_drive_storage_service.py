@@ -21,6 +21,7 @@ class StoredDocumentFile:
     mime_type: str | None
     file_size: int | None
     folder_id: str | None = None
+    folder_path: str | None = None
     storage_ref: str | None = None
 
 
@@ -130,10 +131,11 @@ class DocumentDriveStorageService:
         folder_id = self._ensure_folder(year_folder, folder_id)
         folder_id = self._ensure_folder(month_folder, folder_id)
         folder_id = self._ensure_folder(day_folder, folder_id)
-        return folder_id
+        folder_path = f"{year_folder}/{month_folder}/{day_folder}"
+        return folder_id, folder_path
 
     def store(self, file: UploadFile, title: str | None = None) -> StoredDocumentFile:
-        target_folder_id = self._resolve_target_folder()
+        target_folder_id, target_folder_path = self._resolve_target_folder()
         original_name = Path(file.filename or "documento").name
         extension = Path(original_name).suffix
         safe_title = self._slugify(title or Path(original_name).stem)
@@ -163,6 +165,7 @@ class DocumentDriveStorageService:
             file_name=created["name"],
             web_view_link=created.get("webViewLink", ""),
             folder_id=target_folder_id,
+            folder_path=target_folder_path,
             mime_type=created.get("mimeType"),
             file_size=int(created["size"]) if created.get("size") else None,
         )

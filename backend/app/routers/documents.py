@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
 from app.routers.deps import get_current_user
-from app.schemas.document import DocumentRead, DocumentUpdate
+from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead
 from app.schemas.document import DocumentCreate
 from app.services.document_service import DocumentService
 from app.services.document_workflow_service import DocumentWorkflowService
@@ -32,6 +32,7 @@ def get_document(
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documento no encontrado")
     return document
+
 
 
 @router.post("", response_model=DocumentRead, status_code=status.HTTP_201_CREATED, summary="Crear documento")

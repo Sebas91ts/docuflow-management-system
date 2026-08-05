@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.constants import DocumentConstants
 from app.schemas.document import DocumentCreate
+from app.services.document_folder_service import DocumentFolderService
 from app.services.document_drive_storage_service import DocumentDriveStorageService
 from app.services.document_file_storage_service import DocumentFileStorageService
 from app.services.document_service import DocumentService
@@ -16,6 +17,7 @@ class DocumentWorkflowService:
         self.db = db
         self.storage_service = storage_service or self._resolve_storage_service()
         self.document_service = DocumentService(db)
+        self.folder_service = DocumentFolderService(db)
 
     def _resolve_storage_service(self):
         if settings.GOOGLE_DRIVE_STORAGE_MODE.lower() == "drive":
@@ -38,10 +40,18 @@ class DocumentWorkflowService:
                 "drive_file_name": stored_file.file_name,
                 "drive_web_view_link": stored_file.web_view_link,
                 "drive_folder_id": getattr(stored_file, "folder_id", None),
+                "drive_folder_path": getattr(stored_file, "folder_path", None),
                 "mime_type": stored_file.mime_type,
                 "file_size": stored_file.file_size,
             }
         )
+
+        folder = self.folder_service.resolve_path(
+            getattr(stored_file, "folder_path", None),
+            getattr(stored_file, "folder_id", None),
+        )
+        if folder is not None:
+            document_payload = document_payload.model_copy(update={"folder_id": folder.id})
 
         try:
             status = (
@@ -51,5 +61,6 @@ class DocumentWorkflowService:
             )
             return self.document_service.create(document_payload, uploaded_by_id, status=status)
         except Exception:
-            self.storage_service.remove(getattr(stored_file, "storage_ref", stored_file.web_view_link))
+            storage_ref = getattr(stored_file, "storage_ref", None) or stored_file.web_view_link
+            self.storage_service.remove(storage_ref)
             raise

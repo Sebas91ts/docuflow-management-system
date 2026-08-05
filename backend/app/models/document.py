@@ -29,6 +29,12 @@ class Document(Base):
     drive_file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     drive_web_view_link: Mapped[str | None] = mapped_column(String(500), nullable=True)
     drive_folder_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    drive_folder_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("document_folders.id"),
+        nullable=True,
+    )
     mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
     file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     uploaded_by_id: Mapped[uuid.UUID] = mapped_column(
@@ -56,3 +62,4 @@ class Document(Base):
 
     uploaded_by = relationship("User", foreign_keys=[uploaded_by_id], lazy="joined")
     current_responsible = relationship("User", foreign_keys=[current_responsible_id], lazy="joined")
+    folder = relationship("DocumentFolder", foreign_keys=[folder_id], lazy="joined")
