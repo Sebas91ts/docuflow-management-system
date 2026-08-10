@@ -146,7 +146,14 @@ class DocumentService:
         if user_exists is None:
             raise ValueError("El usuario responsable no existe")
 
-    def create(self, payload: DocumentCreate, uploaded_by_id, status: str | None = None) -> Document:
+    def create(
+        self,
+        payload: DocumentCreate,
+        uploaded_by_id,
+        status: str | None = None,
+        *,
+        commit: bool = True,
+    ) -> Document:
         self._ensure_user_exists(payload.current_responsible_id)
 
         document = Document(
@@ -166,7 +173,8 @@ class DocumentService:
             current_responsible_id=payload.current_responsible_id,
         )
         self.db.add(document)
-        self.db.commit()
+        if commit:
+            self.db.commit()
         self.db.refresh(document)
         return document
 

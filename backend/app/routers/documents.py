@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from app.models.user import User
 from app.routers.deps import get_current_user
 from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead
 from app.schemas.document import DocumentCreate
+from app.schemas.document_assignment import DocumentAssignmentCreate
 from app.services.document_service import DocumentService
 from app.services.document_workflow_service import DocumentWorkflowService
 
@@ -63,6 +64,9 @@ def create_document(
     description: str | None = Form(default=None),
     current_responsible_id: uuid.UUID | None = Form(default=None),
     submission_mode: str = Form(default="register"),
+    assigned_to_id: uuid.UUID | None = Form(default=None),
+    assignment_message: str | None = Form(default=None),
+    assignment_due_date: date | None = Form(default=None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -72,12 +76,26 @@ def create_document(
         description=description,
         current_responsible_id=current_responsible_id,
     )
+    assignment_payload = None
+    if submission_mode == "derive":
+        if assigned_to_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Debes seleccionar un responsable para derivar el documento",
+            )
+        assignment_payload = DocumentAssignmentCreate(
+            document_id=uuid.uuid4(),
+            assigned_to_id=assigned_to_id,
+            message=assignment_message,
+            due_date=assignment_due_date,
+        )
     try:
         return DocumentWorkflowService(db).create_with_file(
             payload=payload,
             uploaded_by_id=current_user.id,
             file=file,
             submission_mode=submission_mode,
+            assignment_payload=assignment_payload,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
