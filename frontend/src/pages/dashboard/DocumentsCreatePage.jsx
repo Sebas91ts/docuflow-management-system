@@ -4,15 +4,18 @@ import { createDocument } from '../../api/documents'
 import ActionModal from '../../components/common/ActionModal'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import FeedbackToast from '../../components/common/FeedbackToast'
+import DocumentAssignmentSection from '../../components/documents/DocumentAssignmentSection'
 import DocumentDropzone from '../../components/documents/DocumentDropzone'
 import DocumentModeToggle from '../../components/documents/DocumentModeToggle'
 import DocumentsHeader from '../../components/documents/DocumentsHeader'
 import { useDocumentForm } from '../../hooks/useDocumentForm'
+import { useUsers } from '../../hooks/useUsers'
 import { useFeedbackToast } from '../../hooks/useFeedbackToast'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 function DocumentsCreatePage() {
   const formState = useDocumentForm()
+  const usersState = useUsers()
   const { toast, showError, showSuccess, clearToast } = useFeedbackToast()
   const [submitting, setSubmitting] = useState(false)
   const [resultModal, setResultModal] = useState({
@@ -21,9 +24,31 @@ function DocumentsCreatePage() {
     title: '',
     message: ''
   })
+  const [assignmentForm, setAssignmentForm] = useState({
+    assignedToId: '',
+    dueDate: '',
+    message: ''
+  })
+
+  const handleAssignmentChange = (field, value) => {
+    setAssignmentForm((current) => ({
+      ...current,
+      [field]: value
+    }))
+  }
+
+  const resetSuccessState = () => {
+    formState.close()
+    setAssignmentForm({
+      assignedToId: '',
+      dueDate: '',
+      message: ''
+    })
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
     if (submitting) {
       return
     }
@@ -38,12 +63,26 @@ function DocumentsCreatePage() {
       return
     }
 
+    const shouldDerive = formState.form.submissionMode === 'derive'
+
+    if (shouldDerive && !assignmentForm.assignedToId) {
+      showError('Selecciona un responsable para derivar el documento')
+      return
+    }
+
     try {
       setSubmitting(true)
       await createDocument({
         title: formState.form.title.trim(),
         description: formState.form.description.trim() || null,
         submission_mode: formState.form.submissionMode,
+        assigned_to_id: shouldDerive ? assignmentForm.assignedToId : null,
+        assignment_message: shouldDerive
+          ? assignmentForm.message.trim() || null
+          : null,
+        assignment_due_date: shouldDerive
+          ? assignmentForm.dueDate || null
+          : null,
         file: formState.selectedFile
       })
 
@@ -62,7 +101,7 @@ function DocumentsCreatePage() {
             : 'El documento fue guardado correctamente.'
       })
 
-      formState.close()
+      resetSuccessState()
     } catch (requestError) {
       const message = getApiErrorMessage(
         requestError,
@@ -121,21 +160,7 @@ function DocumentsCreatePage() {
                   placeholder='Describe el contexto o contenido del documento'
                 />
               </div>
-
-              <DocumentModeToggle
-                value={formState.form.submissionMode}
-                onChange={formState.handleChange}
-              />
-
-              <div className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3'>
-                <p className='text-sm text-[var(--color-muted)]'>
-                  {formState.form.submissionMode === 'archive'
-                    ? 'El documento quedará archivado al guardar.'
-                    : 'El documento se guardará listo para derivación posterior.'}
-                </p>
-              </div>
             </div>
-
             <DocumentDropzone
               fileInputRef={formState.fileInputRef}
               fileSummary={formState.fileSummary}
@@ -148,6 +173,28 @@ function DocumentsCreatePage() {
               onClear={formState.clearFile}
             />
           </div>
+
+          <DocumentModeToggle
+            value={formState.form.submissionMode}
+            onChange={formState.handleChange}
+          />
+
+          <div className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3'>
+            <p className='text-sm text-[var(--color-muted)]'>
+              {formState.form.submissionMode === 'archive'
+                ? 'El documento quedará archivado al guardar.'
+                : 'El documento se guardará y podrá derivarse a otro responsable.'}
+            </p>
+          </div>
+
+          {formState.form.submissionMode === 'derive' ? (
+            <DocumentAssignmentSection
+              value={assignmentForm}
+              onChange={handleAssignmentChange}
+              users={usersState.users}
+              loading={usersState.loading}
+            />
+          ) : null}
 
           <div className='flex items-center justify-end gap-3 border-t border-[var(--color-border)] pt-5'>
             <button

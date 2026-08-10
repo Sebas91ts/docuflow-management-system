@@ -80,7 +80,7 @@ class DocumentAssignmentService:
         self.db.add(event)
         if commit:
             self.db.commit()
-        self.db.refresh(assignment)
+            self.db.refresh(assignment)
         return assignment
 
     def resolve(

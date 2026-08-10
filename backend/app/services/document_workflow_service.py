@@ -28,64 +28,82 @@ class DocumentWorkflowService:
         return DocumentFileStorageService()
 
     def create_with_file(
-        self,
-        *,
-        payload: DocumentCreate,
-        uploaded_by_id,
-        file: UploadFile,
-        submission_mode: str,
-        assignment_payload: DocumentAssignmentCreate | None = None,
+    self,
+    *,
+    payload: DocumentCreate,
+    uploaded_by_id,
+    file: UploadFile,
+    submission_mode: str,
+    assignment_payload: DocumentAssignmentCreate | None = None,
     ):
         stored_file = self.storage_service.store(file, title=payload.title)
-        storage_ref = getattr(stored_file, "storage_ref", None) or stored_file.web_view_link
+
+        storage_ref = (
+            getattr(stored_file, "storage_ref", None)
+            or getattr(stored_file, "file_id", None)
+            or stored_file.web_view_link
+        )
 
         try:
-            with self.db.begin():
-                document_payload = payload.model_copy(
-                    update={
-                        "drive_file_id": stored_file.file_id,
-                        "drive_file_name": stored_file.file_name,
-                        "drive_web_view_link": stored_file.web_view_link,
-                        "drive_folder_id": getattr(stored_file, "folder_id", None),
-                        "drive_folder_path": getattr(stored_file, "folder_path", None),
-                        "mime_type": stored_file.mime_type,
-                        "file_size": stored_file.file_size,
-                    }
+            document_payload = payload.model_copy(
+                update={
+                    "drive_file_id": stored_file.file_id,
+                    "drive_file_name": stored_file.file_name,
+                    "drive_web_view_link": stored_file.web_view_link,
+                    "drive_folder_id": getattr(stored_file, "folder_id", None),
+                    "drive_folder_path": getattr(stored_file, "folder_path", None),
+                    "mime_type": stored_file.mime_type,
+                    "file_size": stored_file.file_size,
+                }
+            )
+
+            folder = self.folder_service.resolve_path(
+                getattr(stored_file, "folder_path", None),
+                getattr(stored_file, "folder_id", None),
+            )
+
+            if folder is not None:
+                document_payload = document_payload.model_copy(
+                    update={"folder_id": folder.id}
                 )
 
-                folder = self.folder_service.resolve_path(
-                    getattr(stored_file, "folder_path", None),
-                    getattr(stored_file, "folder_id", None),
-                )
-                if folder is not None:
-                    document_payload = document_payload.model_copy(update={"folder_id": folder.id})
+            status = (
+                DocumentConstants.DOCUMENT_STATUS_ARCHIVED
+                if submission_mode == "archive"
+                else DocumentConstants.DOCUMENT_STATUS_REGISTERED
+            )
 
-                status = (
-                    DocumentConstants.DOCUMENT_STATUS_ARCHIVED
-                    if submission_mode == "archive"
-                    else DocumentConstants.DOCUMENT_STATUS_REGISTERED
+            document = self.document_service.create(
+                document_payload,
+                uploaded_by_id,
+                status=status,
+                commit=False,
+            )
+
+            # Fuerza el INSERT y obtiene document.id
+            self.db.flush()
+
+            if assignment_payload is not None:
+                assignment_payload = assignment_payload.model_copy(
+                    update={"document_id": document.id}
                 )
 
-                document = self.document_service.create(
-                    document_payload,
-                    uploaded_by_id,
-                    status=status,
+                self.assignment_service.create(
+                    assignment_payload,
+                    assigned_by_id=uploaded_by_id,
                     commit=False,
                 )
 
-                if assignment_payload is not None:
-                    assignment_payload = assignment_payload.model_copy(
-                        update={"document_id": document.id}
-                    )
-                    self.assignment_service.create(
-                        assignment_payload,
-                        assigned_by_id=uploaded_by_id,
-                        commit=False,
-                    )
+            self.db.commit()
 
-                self.db.flush()
-                return document
+            return document
+
         except Exception:
             self.db.rollback()
-            self.storage_service.remove(storage_ref)
+
+            try:
+                self.storage_service.remove(storage_ref)
+            except Exception:
+                pass
+
             raise

@@ -76,6 +76,13 @@ def create_document(
         description=description,
         current_responsible_id=current_responsible_id,
     )
+    print("========== CREATE DOCUMENT ==========")
+    print("submission_mode:", submission_mode)
+    print("assigned_to_id:", assigned_to_id)
+    print("assigned_to_id type:", type(assigned_to_id))
+    print("assignment_message:", assignment_message)
+    print("assignment_due_date:", assignment_due_date)
+    print("====================================")
     assignment_payload = None
     if submission_mode == "derive":
         if assigned_to_id is None:

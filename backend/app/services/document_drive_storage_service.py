@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
 
 from app.core.config import settings
@@ -173,4 +174,9 @@ class DocumentDriveStorageService:
     def remove(self, web_view_link: str | Path) -> None:
         file_id = str(web_view_link)
         if file_id:
-            self.service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+            try:
+                self.service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+            except HttpError as exc:
+                if getattr(exc.resp, "status", None) == 404:
+                    return
+                raise

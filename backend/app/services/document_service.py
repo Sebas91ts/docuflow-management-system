@@ -175,7 +175,7 @@ class DocumentService:
         self.db.add(document)
         if commit:
             self.db.commit()
-        self.db.refresh(document)
+            self.db.refresh(document)
         return document
 
     def update(self, document: Document, payload: DocumentUpdate) -> Document:
