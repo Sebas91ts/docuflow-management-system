@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import aliased
@@ -15,6 +15,24 @@ from app.schemas.document import DocumentCreate, DocumentUpdate
 class DocumentService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _normalize_start(self, value):
+        if value is None:
+            return None
+        if isinstance(value, datetime) and value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        if isinstance(value, date) and not isinstance(value, datetime):
+            return datetime.combine(value, time.min, tzinfo=timezone.utc)
+        return value
+
+    def _normalize_end(self, value):
+        if value is None:
+            return None
+        if isinstance(value, datetime) and value.tzinfo is None:
+            return value.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+        if isinstance(value, date) and not isinstance(value, datetime):
+            return datetime.combine(value, time.max, tzinfo=timezone.utc)
+        return value
 
     def list_documents(
         self,
@@ -69,6 +87,8 @@ class DocumentService:
             )
         if folder_id:
             query = query.filter(Document.folder_id == folder_id)
+        created_from = self._normalize_start(created_from)
+        created_to = self._normalize_end(created_to)
         if created_from:
             query = query.filter(Document.created_at >= created_from)
         if created_to:

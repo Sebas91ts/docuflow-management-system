@@ -41,6 +41,35 @@ function getChildren(folderTree, parentId) {
   return folderTree.get(parentId ?? 'root') || []
 }
 
+function getDirectChildren(folders, parentId) {
+  return folders.filter((folder) => (folder.parent_id ?? null) === (parentId ?? null))
+}
+
+function FolderChip({ folder, isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(folder)}
+      className={[
+        'flex min-h-24 flex-col justify-between rounded-lg border px-4 py-3 text-left transition',
+        isActive
+          ? 'border-[var(--color-primary)] bg-[var(--color-primary-soft)]'
+          : 'border-[var(--color-border)] bg-white hover:border-[var(--color-primary)]',
+      ].join(' ')}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Folder size={18} className="shrink-0 text-[var(--color-primary)]" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{folder.name}</p>
+            <p className="truncate text-xs text-[var(--color-muted)]">{folder.path}</p>
+          </div>
+        </div>
+      </div>
+    </button>
+  )
+}
+
 function FolderTreeNode({
   folder,
   folderTree,
@@ -113,12 +142,16 @@ function DocumentsExplorer({
   expandedFolders,
   hasActiveFilters,
   searchMode,
+  onNavigateFolder,
   onToggleFolder
 }) {
   const rootFolders = getChildren(folderTree, 'root')
 
   const activeFolder =
     folders.find((folder) => folder.id === activeFolderId) || null
+  const childFolders = activeFolderId
+    ? getDirectChildren(folders, activeFolderId)
+    : getChildren(folderTree, 'root')
   const showFolderContext = !searchMode
 
   return (
@@ -195,76 +228,105 @@ function DocumentsExplorer({
               </div>
             )}
 
-            {documents.length === 0 ? (
-              <div className='rounded-md border border-dashed border-[var(--color-border)] px-4 py-8 text-sm text-[var(--color-muted)]'>
-                No hay documentos para los filtros seleccionados.
-              </div>
-            ) : (
-              <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
-                {documents.map((document) => (
-                  <article
-                    key={document.id}
-                    className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] p-4 transition hover:border-[var(--color-primary)]'
-                  >
-                    <div className='flex items-start justify-between gap-3'>
-                      <div className='flex min-w-0 items-start gap-3'>
-                        <div className='rounded-md bg-white p-2 text-[var(--color-primary)]'>
-                          <FileText size={18} />
-                        </div>
-                        <div className='min-w-0'>
-                          <p className='truncate text-sm font-semibold'>
-                            {document.title}
-                          </p>
-                          <p className='mt-1 text-xs text-[var(--color-muted)]'>
-                            {document.code}
-                          </p>
-                          <p className='mt-1 truncate text-xs text-[var(--color-muted)]'>
-                            {document.folder?.path ||
-                              document.drive_folder_path ||
-                              'Sin carpeta'}
-                          </p>
-                        </div>
-                      </div>
-                      {document.drive_web_view_link ? (
-                        <a
-                          className='rounded-md p-1 text-[var(--color-primary)] transition hover:bg-white'
-                          href={document.drive_web_view_link}
-                          target='_blank'
-                          rel='noreferrer'
-                          aria-label='Abrir archivo'
-                        >
-                          <ExternalLink size={16} />
-                        </a>
-                      ) : null}
-                    </div>
-
-                    <p className='mt-4 line-clamp-3 text-sm text-[var(--color-muted)]'>
-                      {document.description || 'Sin descripcion'}
+            <div className="space-y-6">
+              {childFolders.length > 0 ? (
+                <div>
+                  <div className='mb-3 flex items-center justify-between gap-3'>
+                    <p className='text-sm font-semibold text-[var(--color-text)]'>
+                      {activeFolder ? 'Subcarpetas' : 'Carpetas'}
                     </p>
+                    <p className='text-xs text-[var(--color-muted)]'>
+                      Haz click para sincronizar el árbol
+                    </p>
+                  </div>
+                  <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+                    {childFolders.map((folder) => (
+                      <FolderChip
+                        key={folder.id}
+                        folder={folder}
+                        isActive={activeFolderId === folder.id}
+                        onClick={onNavigateFolder}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
-                    <div className='mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-muted)]'>
-                      <span
-                        className={`inline-flex rounded-full border px-3 py-1 font-semibold ${
-                          (STATUS_META[document.status] || STATUS_META.REGISTERED).className
-                        }`}
-                      >
-                        {(STATUS_META[document.status] || STATUS_META.REGISTERED).label}
-                      </span>
-                      <span>{formatDate(document.created_at)}</span>
-                    </div>
+              {documents.length === 0 ? (
+                childFolders.length > 0 ? null : (
+                  <div className='rounded-md border border-dashed border-[var(--color-border)] px-4 py-8 text-sm text-[var(--color-muted)]'>
+                    {showFolderContext && activeFolder
+                      ? 'No hay documentos en esta carpeta.'
+                      : 'No hay documentos para los filtros seleccionados.'}
+                  </div>
+                )
+              ) : (
+                <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+                  {documents.map((document) => (
+                    <article
+                      key={document.id}
+                      className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] p-4 transition hover:border-[var(--color-primary)]'
+                    >
+                      <div className='flex items-start justify-between gap-3'>
+                        <div className='flex min-w-0 items-start gap-3'>
+                          <div className='rounded-md bg-white p-2 text-[var(--color-primary)]'>
+                            <FileText size={18} />
+                          </div>
+                          <div className='min-w-0'>
+                            <p className='truncate text-sm font-semibold'>
+                              {document.title}
+                            </p>
+                            <p className='mt-1 text-xs text-[var(--color-muted)]'>
+                              {document.code}
+                            </p>
+                            <p className='mt-1 truncate text-xs text-[var(--color-muted)]'>
+                              {document.folder?.path ||
+                                document.drive_folder_path ||
+                                'Sin carpeta'}
+                            </p>
+                          </div>
+                        </div>
+                        {document.drive_web_view_link ? (
+                          <a
+                            className='rounded-md p-1 text-[var(--color-primary)] transition hover:bg-white'
+                            href={document.drive_web_view_link}
+                            target='_blank'
+                            rel='noreferrer'
+                            aria-label='Abrir archivo'
+                          >
+                            <ExternalLink size={16} />
+                          </a>
+                        ) : null}
+                      </div>
 
-                    <div className='mt-4 flex items-center justify-start'>
-                      <Link
-                        className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)]'
-                        to={`/dashboard/documents/${document.id}`}
-                      >
-                        Ver detalle
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+                      <p className='mt-4 line-clamp-3 text-sm text-[var(--color-muted)]'>
+                        {document.description || 'Sin descripcion'}
+                      </p>
+
+                      <div className='mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-muted)]'>
+                        <span
+                          className={`inline-flex rounded-full border px-3 py-1 font-semibold ${
+                            (STATUS_META[document.status] || STATUS_META.REGISTERED).className
+                          }`}
+                        >
+                          {(STATUS_META[document.status] || STATUS_META.REGISTERED).label}
+                        </span>
+                        <span>{formatDate(document.created_at)}</span>
+                      </div>
+
+                      <div className='mt-4 flex items-center justify-start'>
+                        <Link
+                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)]'
+                          to={`/dashboard/documents/${document.id}`}
+                        >
+                          Ver detalle
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </div>
       )}
