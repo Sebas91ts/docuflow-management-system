@@ -7,6 +7,7 @@ from app.models.document_assignment import DocumentAssignment
 from app.models.document_event import DocumentEvent
 from app.models.user import User
 from app.schemas.document_assignment import DocumentAssignmentCreate, DocumentAssignmentResolve
+from app.services.pending_notification_manager import pending_notification_manager
 
 
 class DocumentAssignmentService:
@@ -33,6 +34,22 @@ class DocumentAssignmentService:
                 joinedload(DocumentAssignment.document),
             )
             .filter(DocumentAssignment.document_id == document_id)
+            .order_by(DocumentAssignment.created_at.desc())
+            .all()
+        )
+
+    def list_pending_for_user(self, user_id) -> list[DocumentAssignment]:
+        return (
+            self.db.query(DocumentAssignment)
+            .options(
+                joinedload(DocumentAssignment.assigned_by),
+                joinedload(DocumentAssignment.assigned_to),
+                joinedload(DocumentAssignment.document),
+            )
+            .filter(
+                DocumentAssignment.assigned_to_id == user_id,
+                DocumentAssignment.status == "PENDING",
+            )
             .order_by(DocumentAssignment.created_at.desc())
             .all()
         )
@@ -81,7 +98,26 @@ class DocumentAssignmentService:
         if commit:
             self.db.commit()
             self.db.refresh(assignment)
+        if commit:
+            pending_notification_manager.notify_user_nowait(
+                str(payload.assigned_to_id),
+                {
+                    "type": "document_assignment_created",
+                    "assignment_id": str(assignment.id),
+                    "document_id": str(assignment.document_id),
+                },
+            )
         return assignment
+
+    def notify_created(self, assigned_to_id, assignment_id, document_id) -> None:
+        pending_notification_manager.notify_user_nowait(
+            str(assigned_to_id),
+            {
+                "type": "document_assignment_created",
+                "assignment_id": str(assignment_id),
+                "document_id": str(document_id),
+            },
+        )
 
     def resolve(
         self,

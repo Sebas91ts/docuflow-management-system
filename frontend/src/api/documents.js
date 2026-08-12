@@ -72,3 +72,8 @@ export async function updateDocument(id, document) {
   const { data } = await apiClient.put(`/documents/${id}`, document)
   return data
 }
+
+export async function getPendingAssignments() {
+  const { data } = await apiClient.get('/document-assignments/pending')
+  return data
+}

@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -12,6 +12,7 @@ from app.schemas.document_assignment import (
     DocumentAssignmentResolve,
 )
 from app.services.document_assignment_service import DocumentAssignmentService
+from app.services.pending_notification_manager import pending_notification_manager
 
 router = APIRouter(prefix="/api/document-assignments", tags=["document-assignments"])
 
@@ -23,6 +24,14 @@ def list_document_assignments(
     _: User = Depends(get_current_user),
 ):
     return DocumentAssignmentService(db).list_by_document(document_id)
+
+
+@router.get("/pending", response_model=list[DocumentAssignmentRead], summary="Listar pendientes del usuario")
+def list_pending_assignments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return DocumentAssignmentService(db).list_pending_for_user(current_user.id)
 
 
 @router.post("", response_model=DocumentAssignmentRead, status_code=status.HTTP_201_CREATED, summary="Derivar documento")
@@ -52,3 +61,38 @@ def resolve_document_assignment(
         return service.resolve(assignment, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.websocket("/ws/pending")
+async def pending_assignments_ws(
+    websocket: WebSocket,
+    token: str = Query(...),
+):
+    from app.core.security import decode_access_token
+    from app.db.database import SessionLocal
+    from app.models.user import User
+
+    user_id = decode_access_token(token)
+    if user_id is None:
+        await websocket.close(code=1008)
+        return
+
+    db = SessionLocal()
+    parsed_user_id = None
+    try:
+        parsed_user_id = uuid.UUID(user_id)
+        user = db.query(User).filter(User.id == parsed_user_id, User.is_active.is_(True)).first()
+        if user is None:
+            await websocket.close(code=1008)
+            return
+
+        await pending_notification_manager.connect(str(user.id), websocket)
+
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if parsed_user_id is not None:
+            await pending_notification_manager.disconnect(str(parsed_user_id), websocket)
+        db.close()

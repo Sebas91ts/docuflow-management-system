@@ -72,6 +72,15 @@ class DocumentRead(BaseModel):
     deleted_at: datetime | None
 
 
+class DocumentShortRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    code: str
+    title: str
+    status: str
+
+
 class DocumentCodeResponse(BaseModel):
     code: str
 

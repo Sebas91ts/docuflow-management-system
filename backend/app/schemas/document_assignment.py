@@ -3,7 +3,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.document import UserShortRead
+from app.schemas.document import DocumentShortRead, UserShortRead
 
 
 class DocumentAssignmentBase(BaseModel):
@@ -35,3 +35,4 @@ class DocumentAssignmentRead(BaseModel):
     resolved_at: datetime | None
     assigned_by: UserShortRead
     assigned_to: UserShortRead
+    document: DocumentShortRead

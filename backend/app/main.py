@@ -1,14 +1,22 @@
+import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.routers import auth, users, documents, document_assignments
+from app.services.pending_notification_manager import pending_notification_manager
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="API para el Sistema de Gestion Documental DocuFlow",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    pending_notification_manager.set_loop(asyncio.get_running_loop())
 
 app.add_middleware(
     CORSMiddleware,

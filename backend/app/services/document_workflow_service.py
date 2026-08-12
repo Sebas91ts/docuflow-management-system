@@ -28,13 +28,13 @@ class DocumentWorkflowService:
         return DocumentFileStorageService()
 
     def create_with_file(
-    self,
-    *,
-    payload: DocumentCreate,
-    uploaded_by_id,
-    file: UploadFile,
-    submission_mode: str,
-    assignment_payload: DocumentAssignmentCreate | None = None,
+        self,
+        *,
+        payload: DocumentCreate,
+        uploaded_by_id,
+        file: UploadFile,
+        submission_mode: str,
+        assignment_payload: DocumentAssignmentCreate | None = None,
     ):
         stored_file = self.storage_service.store(file, title=payload.title)
 
@@ -83,18 +83,23 @@ class DocumentWorkflowService:
             # Fuerza el INSERT y obtiene document.id
             self.db.flush()
 
+            assignment = None
             if assignment_payload is not None:
                 assignment_payload = assignment_payload.model_copy(
                     update={"document_id": document.id}
                 )
 
-                self.assignment_service.create(
+                assignment = self.assignment_service.create(
                     assignment_payload,
                     assigned_by_id=uploaded_by_id,
                     commit=False,
                 )
 
+            self.db.flush()
             self.db.commit()
+
+            if assignment is not None:
+                self.assignment_service.notify_created(assignment.assigned_to_id, assignment.id, document.id)
 
             return document
 
