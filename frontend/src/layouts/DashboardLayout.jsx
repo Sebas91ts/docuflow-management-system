@@ -8,7 +8,9 @@ import {
   LogOut
 } from 'lucide-react'
 
+import FeedbackToast from '../components/common/FeedbackToast'
 import { useAuth } from '../hooks/useAuth'
+import { usePendingNotifications } from '../hooks/usePendingNotifications'
 
 const navigationItems = [
   { label: 'Resumen', to: '/dashboard', icon: LayoutDashboard },
@@ -24,10 +26,15 @@ const adminNavigationItems = [
 
 function DashboardLayout() {
   const { currentUser, logout } = useAuth()
+  const { toast, clearToast, handleAction } = usePendingNotifications()
   const isAdmin = currentUser?.role === 'admin'
 
   return (
     <div className='flex h-screen overflow-hidden bg-[var(--color-page)] text-[var(--color-text)]'>
+      <div className='fixed right-6 top-6 z-50 pointer-events-none'>
+        <FeedbackToast toast={toast} onClose={clearToast} onAction={handleAction} />
+      </div>
+
       <aside className='flex h-screen w-72 shrink-0 flex-col border-r border-[var(--color-border)] bg-white'>
         <div className='border-b border-[var(--color-border)] px-6 py-6'>
           <p className='text-sm font-semibold text-[var(--color-primary)]'>
