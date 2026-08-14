@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.constants import DocumentConstants
+from app.models.document_assignment import DocumentAssignment
+from app.models.document_event import DocumentEvent
 from app.schemas.document import DocumentCreate
-from app.schemas.document_assignment import DocumentAssignmentCreate
+from app.schemas.document_assignment import DocumentAssignmentCreate, DocumentAssignmentDerive
 from app.services.document_folder_service import DocumentFolderService
 from app.services.document_assignment_service import DocumentAssignmentService
 from app.services.document_drive_storage_service import DocumentDriveStorageService
 from app.services.document_file_storage_service import DocumentFileStorageService
 from app.services.document_service import DocumentService
+from app.services.pending_notification_manager import pending_notification_manager
 
 
 class DocumentWorkflowService:
@@ -112,3 +117,100 @@ class DocumentWorkflowService:
                 pass
 
             raise
+
+    def archive_assignment(
+        self,
+        assignment: DocumentAssignment,
+        user_id,
+        comment: str | None = None,
+    ) -> DocumentAssignment:
+        """Finaliza la asignacion y archiva el documento en una sola transaccion."""
+        document = self.assignment_service._ensure_document(assignment.document_id)
+
+        previous_status = document.status
+        previous_responsible_id = document.current_responsible_id
+
+        assignment.status = "RESOLVED"
+        assignment.resolved_at = datetime.now(timezone.utc)
+
+        document.status = DocumentConstants.DOCUMENT_STATUS_ARCHIVED
+        document.current_responsible_id = None
+
+        event = DocumentEvent(
+            document_id=assignment.document_id,
+            user_id=user_id,
+            action="ARCHIVED",
+            previous_status=previous_status,
+            new_status=DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+            previous_responsible_id=previous_responsible_id,
+            new_responsible_id=None,
+            comment=comment,
+        )
+
+        self.db.add(event)
+        self.db.commit()
+        self.db.refresh(assignment)
+        return assignment
+
+    def derive_assignment(
+        self,
+        assignment: DocumentAssignment,
+        user_id,
+        payload: DocumentAssignmentDerive,
+    ) -> DocumentAssignment:
+        """Resuelve la asignacion actual y crea una nueva derivacion en una sola transaccion."""
+        document = self.assignment_service._ensure_document(assignment.document_id)
+        self.assignment_service._ensure_user(payload.assigned_to_id)
+
+        previous_responsible_id = document.current_responsible_id
+        previous_status = document.status
+
+        # Resolver asignacion actual
+        assignment.status = "RESOLVED"
+        assignment.resolved_at = datetime.now(timezone.utc)
+
+        # Actualizar responsable del documento
+        document.current_responsible_id = payload.assigned_to_id
+        document.status = DocumentConstants.DOCUMENT_STATUS_DERIVED
+
+        # Nueva asignacion
+        new_assignment = DocumentAssignment(
+            document_id=assignment.document_id,
+            assigned_by_id=user_id,
+            assigned_to_id=payload.assigned_to_id,
+            message=payload.message,
+            due_date=payload.due_date,
+            status="PENDING",
+        )
+
+        event = DocumentEvent(
+            document_id=assignment.document_id,
+            user_id=user_id,
+            action="DERIVED",
+            previous_status=previous_status,
+            new_status=DocumentConstants.DOCUMENT_STATUS_DERIVED,
+            previous_responsible_id=previous_responsible_id,
+            new_responsible_id=payload.assigned_to_id,
+            comment=payload.message,
+            metadata_={
+                "due_date": payload.due_date.isoformat() if payload.due_date else None,
+            },
+        )
+
+        self.db.add(new_assignment)
+        self.db.add(event)
+        self.db.flush()
+        self.db.commit()
+        self.db.refresh(new_assignment)
+
+        # Notificar al nuevo responsable via WebSocket
+        pending_notification_manager.notify_user_nowait(
+            str(payload.assigned_to_id),
+            {
+                "type": "document_assignment_created",
+                "assignment_id": str(new_assignment.id),
+                "document_id": str(assignment.document_id),
+            },
+        )
+
+        return new_assignment

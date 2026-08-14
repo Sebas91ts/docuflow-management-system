@@ -18,8 +18,6 @@ export async function getFolders(parentId = null) {
 }
 
 export async function createDocument(document) {
-  console.log('document:', document)
-
   const formData = new FormData()
 
   formData.append('title', document.title)
@@ -77,3 +75,21 @@ export async function getPendingAssignments() {
   const { data } = await apiClient.get('/document-assignments/pending')
   return data
 }
+
+export async function attendAssignment(assignmentId) {
+  const { data } = await apiClient.patch(`/document-assignments/${assignmentId}/attend`)
+  return data
+}
+
+export async function archiveAssignment(assignmentId, comment = null) {
+  const { data } = await apiClient.patch(`/document-assignments/${assignmentId}/archive`, {
+    comment,
+  })
+  return data
+}
+
+export async function deriveAssignment(assignmentId, payload) {
+  const { data } = await apiClient.patch(`/document-assignments/${assignmentId}/derive`, payload)
+  return data
+}
+

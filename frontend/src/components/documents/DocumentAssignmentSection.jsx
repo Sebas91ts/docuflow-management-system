@@ -40,7 +40,7 @@ function DocumentAssignmentSection({ value, onChange, users, loading }) {
             className='text-xs font-medium text-[var(--color-muted)]'
             htmlFor='assignment_due_date'
           >
-            Fecha de vencimiento
+            Fecha de vencimiento (Opcional)
           </label>
           <input
             id='assignment_due_date'

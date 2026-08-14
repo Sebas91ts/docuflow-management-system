@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.constants import DocumentConstants
 from app.models.document import Document
 from app.models.document_assignment import DocumentAssignment
 from app.models.document_event import DocumentEvent
@@ -48,7 +49,7 @@ class DocumentAssignmentService:
             )
             .filter(
                 DocumentAssignment.assigned_to_id == user_id,
-                DocumentAssignment.status == "PENDING",
+                DocumentAssignment.status.in_(["PENDING", "IN_PROGRESS"]),
             )
             .order_by(DocumentAssignment.created_at.desc())
             .all()
@@ -68,7 +69,7 @@ class DocumentAssignmentService:
         previous_responsible_id = document.current_responsible_id
         previous_status = document.status
         document.current_responsible_id = payload.assigned_to_id
-        document.status = "IN_PROGRESS"
+        document.status = DocumentConstants.DOCUMENT_STATUS_DERIVED
 
         assignment = DocumentAssignment(
             document_id=payload.document_id,
@@ -84,7 +85,7 @@ class DocumentAssignmentService:
             user_id=assigned_by_id,
             action="ASSIGNED",
             previous_status=previous_status,
-            new_status="IN_PROGRESS",
+            new_status=DocumentConstants.DOCUMENT_STATUS_DERIVED,
             previous_responsible_id=previous_responsible_id,
             new_responsible_id=payload.assigned_to_id,
             comment=payload.message,
@@ -118,6 +119,30 @@ class DocumentAssignmentService:
                 "document_id": str(document_id),
             },
         )
+
+    def mark_in_progress(self, assignment: DocumentAssignment, user_id) -> DocumentAssignment:
+        """Marca la asignacion y el documento como 'En atención'."""
+        document = self._ensure_document(assignment.document_id)
+
+        previous_status = document.status
+        document.status = DocumentConstants.DOCUMENT_STATUS_IN_PROGRESS
+        assignment.status = "IN_PROGRESS"
+
+        event = DocumentEvent(
+            document_id=assignment.document_id,
+            user_id=user_id,
+            action="MARKED_IN_PROGRESS",
+            previous_status=previous_status,
+            new_status=DocumentConstants.DOCUMENT_STATUS_IN_PROGRESS,
+            previous_responsible_id=document.current_responsible_id,
+            new_responsible_id=document.current_responsible_id,
+            comment=None,
+        )
+
+        self.db.add(event)
+        self.db.commit()
+        self.db.refresh(assignment)
+        return assignment
 
     def resolve(
         self,

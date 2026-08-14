@@ -11,16 +11,16 @@ import LoadingSpinner from '../common/LoadingSpinner'
 
 const STATUS_META = {
   REGISTERED: {
-    label: 'Registrado',
-    className: 'border-sky-200 bg-sky-50 text-sky-700',
+    label: 'Pendiente',
+    className: 'border-amber-200 bg-amber-50 text-amber-700',
   },
   ARCHIVED: {
-    label: 'Archivado',
+    label: 'Finalizado',
     className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   },
   IN_PROGRESS: {
-    label: 'En proceso',
-    className: 'border-amber-200 bg-amber-50 text-amber-700',
+    label: 'En atención',
+    className: 'border-sky-200 bg-sky-50 text-sky-700',
   },
   LOGICALLY_DELETED: {
     label: 'Eliminado lógicamente',

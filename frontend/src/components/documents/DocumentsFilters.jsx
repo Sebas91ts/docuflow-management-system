@@ -30,9 +30,9 @@ function DocumentsFilters({ filters, onChange, onApply, onClear }) {
             onChange={(event) => onChange('status', event.target.value)}
           >
             <option value="">Todos</option>
-            <option value="REGISTERED">Registrado</option>
-            <option value="ARCHIVED">Archivado</option>
-            <option value="IN_PROGRESS">En proceso</option>
+            <option value="DERIVED">Pendiente</option>
+            <option value="ARCHIVED">Finalizado</option>
+            <option value="IN_PROGRESS">En atención</option>
           </select>
         </div>
         <div className="space-y-1">

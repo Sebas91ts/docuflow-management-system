@@ -21,6 +21,16 @@ class DocumentAssignmentResolve(BaseModel):
     status: str = Field(default="RESOLVED", max_length=40)
 
 
+class DocumentAssignmentArchive(BaseModel):
+    comment: str | None = Field(default=None, max_length=1000)
+
+
+class DocumentAssignmentDerive(BaseModel):
+    assigned_to_id: uuid.UUID
+    message: str | None = Field(default=None, max_length=1000)
+    due_date: date | None = None
+
+
 class DocumentAssignmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
