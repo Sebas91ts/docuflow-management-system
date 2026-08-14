@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.user import User
-from app.routers.deps import require_admin
+from app.routers.deps import require_admin, get_current_user
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services.user_service import UserService
 
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 )
 def list_users(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(get_current_user),
 ):
     return UserService(db).list_users()
 

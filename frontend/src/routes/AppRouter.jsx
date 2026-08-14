@@ -6,7 +6,9 @@ import PublicRoute from './PublicRoute'
 import LoginPage from '../pages/LoginPage'
 import DashboardLayout from '../layouts/DashboardLayout'
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
-import DocumentsPage from '../pages/dashboard/DocumentsPage'
+import DocumentsCreatePage from '../pages/dashboard/DocumentsCreatePage'
+import DocumentDetailPage from '../pages/dashboard/DocumentDetailPage'
+import DocumentsListPage from '../pages/dashboard/DocumentsListPage'
 import PendingPage from '../pages/dashboard/PendingPage'
 import UsersPage from '../pages/dashboard/UsersPage'
 import AuditPage from '../pages/dashboard/AuditPage'
@@ -21,7 +23,11 @@ function AppRouter() {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHomePage />} />
-          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="documents">
+            <Route index element={<DocumentsListPage />} />
+            <Route path="new" element={<DocumentsCreatePage />} />
+            <Route path=":id" element={<DocumentDetailPage />} />
+          </Route>
           <Route path="pending" element={<PendingPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route element={<AdminRoute />}>

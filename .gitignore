@@ -9,9 +9,11 @@ venv/
 .venv/
 env/
 ENV/
+storage/
 
 # FastAPI / logs
 *.log
+backend/credentials.json
 
 # Node / React
 node_modules/
