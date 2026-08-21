@@ -1,9 +1,9 @@
-import { ArrowLeft, ExternalLink, FileText } from 'lucide-react'
+import { ArrowLeft, Download, ExternalLink, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import LoadingSpinner from '../../components/common/LoadingSpinner'
-import { getDocument } from '../../api/documents'
+import { getDocument, downloadDocument } from '../../api/documents'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 const STATUS_META = {
@@ -41,6 +41,21 @@ function DocumentDetailPage() {
   const [document, setDocument] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (!document) return
+    setDownloading(true)
+    try {
+      await downloadDocument(document.id, document.drive_file_name || document.title || 'documento')
+    } catch {
+      if (document.drive_web_view_link) {
+        window.open(document.drive_web_view_link, '_blank', 'noopener,noreferrer')
+      }
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
@@ -154,16 +169,29 @@ function DocumentDetailPage() {
                 <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)]">Fecha de actualizacion</p>
                 <p className="mt-1 font-medium">{formatDate(document.updated_at)}</p>
               </div>
-              {document.drive_web_view_link ? (
-                <a
-                  className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--color-primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
-                  href={document.drive_web_view_link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink size={16} />
-                  Abrir archivo
-                </a>
+              {document.drive_file_id || document.drive_file_name ? (
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <button
+                    className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--color-primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-60 disabled:cursor-not-allowed"
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={downloading}
+                  >
+                    <Download size={16} />
+                    {downloading ? 'Descargando...' : 'Descargar'}
+                  </button>
+                  {document.drive_web_view_link ? (
+                    <a
+                      className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                      href={document.drive_web_view_link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <ExternalLink size={16} />
+                      Abrir en Drive
+                    </a>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </div>

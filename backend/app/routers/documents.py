@@ -2,6 +2,7 @@ import uuid
 from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -136,3 +137,29 @@ def delete_logical_document(
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documento no encontrado")
     return service.logical_delete(document)
+
+
+# Descargar documento
+@router.get("/{document_id}/download", summary="Descargar documento")
+def download_document(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user)
+):
+    document = DocumentService(db).get_by_id(document_id)
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documento no encontrado")
+    if not document.drive_file_id and not document.drive_file_name:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El documento no tiene un archivo físico asociado")
+    try:
+        file_stream, file_name, mime_type = DocumentWorkflowService(db).download_file(document)
+        return StreamingResponse(
+            file_stream,
+            media_type=mime_type or "application/octet-stream",
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_name}"',
+                "Access-Control-Expose-Headers": "Content-Disposition"
+            }
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al descargar: {str(exc)}")

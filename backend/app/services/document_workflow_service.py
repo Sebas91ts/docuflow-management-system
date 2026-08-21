@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from datetime import datetime, timezone
 
 from fastapi import UploadFile
@@ -214,3 +215,11 @@ class DocumentWorkflowService:
         )
 
         return new_assignment
+
+    def download_file(self, document) -> tuple[io.BytesIO, str, str]:
+        """Descarga el archivo fisico del documento desde el almacenamiento configurado."""
+        if settings.GOOGLE_DRIVE_STORAGE_MODE.lower() == "drive":
+            file_stream = self.storage_service.download(document.drive_file_id)
+        else:
+            file_stream = self.storage_service.download(document.drive_file_name)
+        return file_stream, document.drive_file_name, document.mime_type

@@ -124,6 +124,7 @@ function PendingPage() {
         </div>
       ) : (
         <div className='grid gap-4'>
+          {console.log(assignments)}
           {assignments.map((assignment) => (
             <PendingCard
               key={assignment.id}
