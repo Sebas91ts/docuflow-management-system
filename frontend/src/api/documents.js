@@ -93,3 +93,30 @@ export async function deriveAssignment(assignmentId, payload) {
   return data
 }
 
+export async function downloadDocument(id, fallbackFilename) {
+  const response = await apiClient.get(`/documents/${id}/download`, {
+    responseType: 'blob',
+  })
+
+  // Leer el nombre real del archivo desde el header Content-Disposition
+  // Formato: attachment; filename="nombre_archivo.pdf"
+  const contentDisposition = response.headers['content-disposition']
+  let filename = fallbackFilename || 'documento'
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^";\n]+)"?/)
+    if (match && match[1]) {
+      filename = match[1].trim()
+    }
+  }
+
+  const mimeType = response.headers['content-type'] || 'application/octet-stream'
+  const url = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }))
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+

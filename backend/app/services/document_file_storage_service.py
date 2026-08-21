@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -63,3 +64,9 @@ class DocumentFileStorageService:
         target_path = Path(storage_ref)
         if target_path.exists():
             target_path.unlink()
+
+    def download(self, file_name: str) -> io.BytesIO:
+        target_path = self.base_dir / file_name
+        if not target_path.exists():
+            raise FileNotFoundError("Archivo no encontrado en almacenamiento local")
+        return io.BytesIO(target_path.read_bytes())

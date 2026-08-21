@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Archive,
@@ -9,6 +10,7 @@ import {
   RefreshCcw,
   UserRound,
 } from 'lucide-react'
+import { downloadDocument } from '../../api/documents'
 
 const statusLabel = {
   PENDING: { text: 'Pendiente', style: 'bg-amber-100 text-amber-700' },
@@ -17,6 +19,7 @@ const statusLabel = {
 
 function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }) {
   const navigate = useNavigate()
+  const [downloading, setDownloading] = useState(false)
 
   const doc = assignment.document ?? {}
   const statusInfo = statusLabel[assignment.status] ?? statusLabel.PENDING
@@ -25,9 +28,19 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
     navigate(`/dashboard/documents/${doc.id}`)
   }
 
-  const handleDownload = () => {
-    if (doc.drive_web_view_link) {
-      window.open(doc.drive_web_view_link, '_blank', 'noopener,noreferrer')
+  const handleDownload = async () => {
+    console.log("documento:", doc);
+    if (!doc.id) return
+    setDownloading(true)
+    try {
+      await downloadDocument(doc.id, doc.drive_file_name || doc.title || 'documento')
+    } catch {
+      // Si falla la descarga directa, abrir en Drive como fallback
+      if (doc.drive_web_view_link) {
+        window.open(doc.drive_web_view_link, '_blank', 'noopener,noreferrer')
+      }
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -95,14 +108,14 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
         {/* Descargar */}
         <button
           id={`btn-download-${assignment.id}`}
-          className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50'
+          className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed'
           type='button'
           onClick={handleDownload}
-          disabled={busy || !doc.drive_web_view_link}
-          title={doc.drive_web_view_link ? 'Abrir en Google Drive' : 'Sin archivo disponible'}
+          disabled={busy || downloading || !doc.id}
+          title='Descargar archivo directamente'
         >
           <Download size={13} />
-          Descargar
+          {downloading ? 'Descargando...' : 'Descargar'}
         </button>
 
         <div className='flex-1' />
@@ -128,8 +141,8 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
           className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-page)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed'
           type='button'
           onClick={() => onDerive(assignment)}
-          disabled={busy}
-          title='Pasar este documento a otro usuario'
+          disabled={assignment.status != "IN_PROGRESS"}
+          title={assignment.status != "IN_PROGRESS" ? "Debe marcar en atención primero" : "Pasar este documento a otro usuario"}
         >
           <RefreshCcw size={13} />
           Derivar
@@ -141,8 +154,8 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
           className='inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed'
           type='button'
           onClick={() => onArchive(assignment)}
-          disabled={busy}
-          title='Finalizar y archivar este documento'
+          disabled={assignment.status != "IN_PROGRESS"}
+          title={assignment.status != "IN_PROGRESS" ? "Debe marcar en atención primero" : "Finalizar y archivar este documento"}
         >
           <Archive size={13} />
           Finalizar

@@ -79,6 +79,7 @@ class DocumentShortRead(BaseModel):
     code: str
     title: str
     status: str
+    drive_web_view_link: str
 
 
 class DocumentCodeResponse(BaseModel):

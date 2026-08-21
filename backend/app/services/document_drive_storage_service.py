@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -9,7 +10,7 @@ from fastapi import UploadFile
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
 
 from app.core.config import settings
 
@@ -180,3 +181,13 @@ class DocumentDriveStorageService:
                 if getattr(exc.resp, "status", None) == 404:
                     return
                 raise
+
+    def download(self, file_id: str) -> io.BytesIO:
+        request = self.service.files().get_media(fileId=file_id)
+        file_stream = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_stream, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+        file_stream.seek(0)
+        return file_stream
