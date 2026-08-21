@@ -4,7 +4,8 @@ import {
   ExternalLink,
   FileText,
   Folder,
-  FolderOpen
+  FolderOpen,
+  Clock3
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import LoadingSpinner from '../common/LoadingSpinner'
@@ -314,12 +315,19 @@ function DocumentsExplorer({
                         <span>{formatDate(document.created_at)}</span>
                       </div>
 
-                      <div className='mt-4 flex items-center justify-start'>
+                      <div className='mt-4 flex flex-wrap items-center gap-2'>
                         <Link
-                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)]'
+                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
                           to={`/dashboard/documents/${document.id}`}
                         >
                           Ver detalle
+                        </Link>
+                        <Link
+                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
+                          to={`/dashboard/trazabilidad/${document.id}`}
+                        >
+                          <Clock3 size={14} />
+                          Ver trazabilidad
                         </Link>
                       </div>
                     </article>

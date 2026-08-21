@@ -105,6 +105,19 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
           Ver detalle
         </button>
 
+        {/* Ver trazabilidad */}
+        <button
+          id={`btn-timeline-${assignment.id}`}
+          className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50 bg-white'
+          type='button'
+          onClick={() => navigate(`/dashboard/trazabilidad/${doc.id}`)}
+          disabled={busy || !doc.id}
+          title='Ver trazabilidad del documento'
+        >
+          <Clock3 size={13} />
+          Ver trazabilidad
+        </button>
+
         {/* Descargar */}
         <button
           id={`btn-download-${assignment.id}`}

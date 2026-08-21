@@ -112,3 +112,18 @@ class DocumentFolderRead(BaseModel):
 
 class DocumentFolderNode(DocumentFolderRead):
     documents_count: int = 0
+
+
+class DocumentEventRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    document_id: uuid.UUID
+    action: str
+    previous_status: str | None
+    new_status: str | None
+    comment: str | None
+    created_at: datetime
+    user: UserShortRead
+    previous_responsible: UserShortRead | None
+    new_responsible: UserShortRead | None

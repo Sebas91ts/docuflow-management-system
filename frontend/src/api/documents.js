@@ -120,3 +120,9 @@ export async function downloadDocument(id, fallbackFilename) {
   window.URL.revokeObjectURL(url)
 }
 
+export async function getDocumentTimeline(id) {
+  const { data } = await apiClient.get(`/documents/${id}/timeline`)
+  return data
+}
+
+

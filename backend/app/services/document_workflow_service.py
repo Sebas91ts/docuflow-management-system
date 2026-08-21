@@ -89,6 +89,29 @@ class DocumentWorkflowService:
             # Fuerza el INSERT y obtiene document.id
             self.db.flush()
 
+            # Evento inicial de registro
+            uploaded_event = DocumentEvent(
+                document_id=document.id,
+                user_id=uploaded_by_id,
+                action="UPLOADED",
+                previous_status=None,
+                new_status=DocumentConstants.DOCUMENT_STATUS_REGISTERED if submission_mode != "archive" else DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+                comment="Carga inicial del documento",
+            )
+            self.db.add(uploaded_event)
+
+            # Si se archiva directamente, registrar evento de archivado
+            if submission_mode == "archive":
+                archived_event = DocumentEvent(
+                    document_id=document.id,
+                    user_id=uploaded_by_id,
+                    action="ARCHIVED",
+                    previous_status=DocumentConstants.DOCUMENT_STATUS_REGISTERED,
+                    new_status=DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+                    comment="Archivado directamente al registrar",
+                )
+                self.db.add(archived_event)
+
             assignment = None
             if assignment_payload is not None:
                 assignment_payload = assignment_payload.model_copy(

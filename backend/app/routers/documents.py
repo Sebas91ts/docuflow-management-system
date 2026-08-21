@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
 from app.routers.deps import get_current_user
-from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead
+from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead, DocumentEventRead
 from app.schemas.document import DocumentCreate
 from app.schemas.document_assignment import DocumentAssignmentCreate
 from app.services.document_service import DocumentService
 from app.services.document_workflow_service import DocumentWorkflowService
+from app.models.document_event import DocumentEvent
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -163,3 +164,21 @@ def download_document(
         )
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al descargar: {str(exc)}")
+
+
+@router.get("/{document_id}/timeline", response_model=list[DocumentEventRead], summary="Historial de trazabilidad del documento")
+def get_document_timeline(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    document = DocumentService(db).get_by_id(document_id)
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documento no encontrado")
+    events = (
+        db.query(DocumentEvent)
+        .filter(DocumentEvent.document_id == document_id)
+        .order_by(DocumentEvent.created_at.asc())
+        .all()
+    )
+    return events
