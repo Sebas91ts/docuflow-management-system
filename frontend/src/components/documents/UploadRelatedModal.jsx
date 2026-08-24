@@ -63,7 +63,7 @@ function UploadRelatedModal({ isOpen, onClose, onConfirm }) {
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-      <div className='absolute inset-0 bg-black/45 backdrop-blur-sm' onClick={handleClose} />
+      <button className='absolute inset-0 bg-black/45 backdrop-blur-sm' onClick={handleClose} />
       <div className='relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white shadow-2xl transition-all duration-200'>
         <div className='flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4'>
           <div>
