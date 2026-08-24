@@ -62,6 +62,8 @@ function DocumentsListPage() {
         hasActiveFilters={explorer.hasActiveFilters}
         searchMode={explorer.searchMode}
         onNavigateFolder={handleNavigateFolder}
+        limit={explorer.limit}
+        onLoadMore={explorer.loadMore}
         onToggleFolder={(folder) => {
           explorer.setExpandedFolders((current) => {
             const next = new Set(current)

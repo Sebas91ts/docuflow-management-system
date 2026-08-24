@@ -9,6 +9,7 @@ const emptyForm = {
 export function useDocumentForm() {
   const [form, setForm] = useState(emptyForm)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [extraFiles, setExtraFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
 
@@ -26,9 +27,18 @@ export function useDocumentForm() {
     }
   }, [selectedFile])
 
+  const extraFilesSummary = useMemo(() => {
+    return extraFiles.map((file) => ({
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+    }))
+  }, [extraFiles])
+
   const reset = () => {
     setForm(emptyForm)
     setSelectedFile(null)
+    setExtraFiles([])
     setIsDragging(false)
   }
 
@@ -52,33 +62,56 @@ export function useDocumentForm() {
     }))
   }
 
-  const setFile = (file) => {
-    setSelectedFile(file)
+  const setFiles = (filesList) => {
+    if (!filesList || filesList.length === 0) return
+    const arr = Array.from(filesList)
+    // Si ya hay un archivo principal, los nuevos se agregan como extra
+    if (selectedFile) {
+      setExtraFiles((prev) => [...prev, ...arr])
+    } else {
+      // Primer lote: el primero es el principal, el resto son extras
+      setSelectedFile(arr[0])
+      setExtraFiles(arr.slice(1))
+    }
   }
 
   const clearFile = () => {
-    setSelectedFile(null)
+    if (extraFiles.length > 0) {
+      setSelectedFile(extraFiles[0])
+      setExtraFiles((current) => current.slice(1))
+    } else {
+      setSelectedFile(null)
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
+  const removeExtraFile = (index) => {
+    setExtraFiles((current) => current.filter((_, i) => i !== index))
+  }
+
   const handleFileInputChange = (event) => {
-    const file = event.target.files?.[0] ?? null
-    setFile(file)
+    const files = event.target.files ?? []
+    setFiles(files)
+    if (event.target) {
+      event.target.value = ''
+    }
   }
 
   const handleDrop = (event) => {
     event.preventDefault()
     setIsDragging(false)
-    const file = event.dataTransfer.files?.[0] ?? null
-    setFile(file)
+    const files = event.dataTransfer.files ?? []
+    setFiles(files)
   }
 
   return {
     form,
     selectedFile,
+    extraFiles,
     fileSummary,
+    extraFilesSummary,
     hasFile,
     isDragging,
     fileInputRef,
@@ -91,5 +124,6 @@ export function useDocumentForm() {
     handleFileInputChange,
     handleDrop,
     clearFile,
+    removeExtraFile,
   }
 }

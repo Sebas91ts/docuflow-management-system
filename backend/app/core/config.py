@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
 
-    GOOGLE_SERVICE_ACCOUNT_FILE: str | None = None
+    GOOGLE_SERVICE_ACCOUNT_JSON: str | None = None
     GOOGLE_DRIVE_SHARED_DRIVE_ID: str | None = None
     GOOGLE_DRIVE_ROOT_FOLDER_ID: str | None = None
     GOOGLE_DRIVE_INSTITUTION_NAME: str = "Gestion"

@@ -28,6 +28,7 @@ export function useDocumentExplorer() {
     folder_id: '',
   })
   const [activeFolderId, setActiveFolderId] = useState('')
+  const [limit, setLimit] = useState(10)
   const [error, setError] = useState('')
   const didMountRef = useRef(false)
   const hasActiveFilters = useMemo(() => {
@@ -50,7 +51,7 @@ export function useDocumentExplorer() {
 
   const folderTree = useMemo(() => buildFolderTree(folders), [folders])
 
-  const loadData = useCallback(async (nextFilters, folderId) => {
+  const loadData = useCallback(async (nextFilters, folderId, currentLimit = 10) => {
     const resolvedFilters =
       nextFilters ?? {
         search: '',
@@ -84,6 +85,7 @@ export function useDocumentExplorer() {
           created_from: resolvedFilters.created_from || undefined,
           created_to: resolvedFilters.created_to || undefined,
           folder_id: shouldScopeByFolder ? resolvedFolderId : undefined,
+          limit: currentLimit,
         }),
       ])
       setFolders(folderData)
@@ -96,22 +98,19 @@ export function useDocumentExplorer() {
   }, [])
 
   useEffect(() => {
-    void loadData()
-  }, [loadData])
+    void loadData(filters, activeFolderId, limit)
+  }, [activeFolderId, limit, loadData])
 
+  // Reset limit when folder changes
   useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true
-      return
-    }
-
-    void loadData(filters, activeFolderId)
-  }, [activeFolderId, loadData])
+    setLimit(10)
+  }, [activeFolderId])
 
   const updateFilter = (name, value) => setFilters((current) => ({ ...current, [name]: value }))
 
   const applyFilters = async () => {
-    await loadData(filters, activeFolderId)
+    setLimit(10)
+    await loadData(filters, activeFolderId, 10)
   }
 
   const clearFilters = async () => {
@@ -126,7 +125,12 @@ export function useDocumentExplorer() {
     }
     setFilters(nextFilters)
     setActiveFolderId('')
-    await loadData(nextFilters, '')
+    setLimit(10)
+    await loadData(nextFilters, '', 10)
+  }
+
+  const loadMore = () => {
+    setLimit((prev) => prev + 10)
   }
 
   return {
@@ -145,6 +149,8 @@ export function useDocumentExplorer() {
     updateFilter,
     applyFilters,
     clearFilters,
-    reload: loadData,
+    limit,
+    loadMore,
+    reload: (nextFilters, folderId) => loadData(nextFilters ?? filters, folderId ?? activeFolderId, limit),
   }
 }

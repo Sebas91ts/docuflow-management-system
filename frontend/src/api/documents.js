@@ -61,6 +61,12 @@ export async function createDocument(document) {
 
   formData.append('file', document.file)
 
+  if (document.extra_files && document.extra_files.length > 0) {
+    document.extra_files.forEach((file) => {
+      formData.append('extra_files', file)
+    })
+  }
+
   const { data } = await apiClient.post('/documents', formData)
 
   return data
@@ -122,6 +128,22 @@ export async function downloadDocument(id, fallbackFilename) {
 
 export async function getDocumentTimeline(id) {
   const { data } = await apiClient.get(`/documents/${id}/timeline`)
+  return data
+}
+
+export async function uploadRelatedDocument(documentId, { file, relation_type, title, description }) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('relation_type', relation_type)
+  if (title) formData.append('title', title)
+  if (description) formData.append('description', description)
+
+  const { data } = await apiClient.post(`/documents/${documentId}/related`, formData)
+  return data
+}
+
+export async function getRelatedDocuments(documentId) {
+  const { data } = await apiClient.get(`/documents/${documentId}/related`)
   return data
 }
 

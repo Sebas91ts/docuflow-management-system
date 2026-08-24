@@ -144,7 +144,9 @@ function DocumentsExplorer({
   hasActiveFilters,
   searchMode,
   onNavigateFolder,
-  onToggleFolder
+  onToggleFolder,
+  limit = 10,
+  onLoadMore,
 }) {
   const rootFolders = getChildren(folderTree, 'root')
 
@@ -262,76 +264,90 @@ function DocumentsExplorer({
                   </div>
                 )
               ) : (
-                <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
-                  {documents.map((document) => (
-                    <article
-                      key={document.id}
-                      className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] p-4 transition hover:border-[var(--color-primary)]'
-                    >
-                      <div className='flex items-start justify-between gap-3'>
-                        <div className='flex min-w-0 items-start gap-3'>
-                          <div className='rounded-md bg-white p-2 text-[var(--color-primary)]'>
-                            <FileText size={18} />
+                <div className="space-y-6">
+                  <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+                    {documents.map((document) => (
+                      <article
+                        key={document.id}
+                        className='rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] p-4 transition hover:border-[var(--color-primary)]'
+                      >
+                        <div className='flex items-start justify-between gap-3'>
+                          <div className='flex min-w-0 items-start gap-3'>
+                            <div className='rounded-md bg-white p-2 text-[var(--color-primary)]'>
+                              <FileText size={18} />
+                            </div>
+                            <div className='min-w-0'>
+                              <p className='truncate text-sm font-semibold'>
+                                {document.title}
+                              </p>
+                              <p className='mt-1 text-xs text-[var(--color-muted)]'>
+                                {document.code}
+                              </p>
+                              <p className='mt-1 truncate text-xs text-[var(--color-muted)]'>
+                                {document.folder?.path ||
+                                  document.drive_folder_path ||
+                                  'Sin carpeta'}
+                              </p>
+                            </div>
                           </div>
-                          <div className='min-w-0'>
-                            <p className='truncate text-sm font-semibold'>
-                              {document.title}
-                            </p>
-                            <p className='mt-1 text-xs text-[var(--color-muted)]'>
-                              {document.code}
-                            </p>
-                            <p className='mt-1 truncate text-xs text-[var(--color-muted)]'>
-                              {document.folder?.path ||
-                                document.drive_folder_path ||
-                                'Sin carpeta'}
-                            </p>
-                          </div>
+                          {document.drive_web_view_link ? (
+                            <a
+                              className='rounded-md p-1 text-[var(--color-primary)] transition hover:bg-white'
+                              href={document.drive_web_view_link}
+                              target='_blank'
+                              rel='noreferrer'
+                              aria-label='Abrir archivo'
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          ) : null}
                         </div>
-                        {document.drive_web_view_link ? (
-                          <a
-                            className='rounded-md p-1 text-[var(--color-primary)] transition hover:bg-white'
-                            href={document.drive_web_view_link}
-                            target='_blank'
-                            rel='noreferrer'
-                            aria-label='Abrir archivo'
+
+                        <p className='mt-4 line-clamp-3 text-sm text-[var(--color-muted)]'>
+                          {document.description || 'Sin descripcion'}
+                        </p>
+
+                        <div className='mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-muted)]'>
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 font-semibold ${
+                              (STATUS_META[document.status] || STATUS_META.REGISTERED).className
+                            }`}
                           >
-                            <ExternalLink size={16} />
-                          </a>
-                        ) : null}
-                      </div>
+                            {(STATUS_META[document.status] || STATUS_META.REGISTERED).label}
+                          </span>
+                          <span>{formatDate(document.created_at)}</span>
+                        </div>
 
-                      <p className='mt-4 line-clamp-3 text-sm text-[var(--color-muted)]'>
-                        {document.description || 'Sin descripcion'}
-                      </p>
+                        <div className='mt-4 flex flex-wrap items-center gap-2'>
+                          <Link
+                            className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
+                            to={`/dashboard/documents/${document.id}`}
+                          >
+                            Ver detalle
+                          </Link>
+                          <Link
+                            className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
+                            to={`/dashboard/trazabilidad/${document.id}`}
+                          >
+                            <Clock3 size={14} />
+                            Ver trazabilidad
+                          </Link>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
 
-                      <div className='mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-muted)]'>
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 font-semibold ${
-                            (STATUS_META[document.status] || STATUS_META.REGISTERED).className
-                          }`}
-                        >
-                          {(STATUS_META[document.status] || STATUS_META.REGISTERED).label}
-                        </span>
-                        <span>{formatDate(document.created_at)}</span>
-                      </div>
-
-                      <div className='mt-4 flex flex-wrap items-center gap-2'>
-                        <Link
-                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
-                          to={`/dashboard/documents/${document.id}`}
-                        >
-                          Ver detalle
-                        </Link>
-                        <Link
-                          className='inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] px-3 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white hover:text-[var(--color-primary)]'
-                          to={`/dashboard/trazabilidad/${document.id}`}
-                        >
-                          <Clock3 size={14} />
-                          Ver trazabilidad
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
+                  {documents.length >= limit ? (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={onLoadMore}
+                        className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--color-primary)] bg-[var(--color-primary-soft)] px-6 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
+                      >
+                        Cargar más documentos
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </div>

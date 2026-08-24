@@ -1,10 +1,20 @@
-import { ArrowLeft, Download, ExternalLink, FileText, Clock3 } from 'lucide-react'
+import { ArrowLeft, Download, ExternalLink, FileText, Clock3, Paperclip } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import LoadingSpinner from '../../components/common/LoadingSpinner'
-import { getDocument, downloadDocument } from '../../api/documents'
+import UploadRelatedModal from '../../components/documents/UploadRelatedModal'
+import ActionModal from '../../components/common/ActionModal'
+import FeedbackToast from '../../components/common/FeedbackToast'
+import { useFeedbackToast } from '../../hooks/useFeedbackToast'
+import { getDocument, downloadDocument, getRelatedDocuments, uploadRelatedDocument } from '../../api/documents'
 import { getApiErrorMessage } from '../../utils/apiError'
+
+const RELATION_TYPE_LABELS = {
+  attachment: 'Anexo / Adjunto',
+  response: 'Respuesta Oficial',
+  backup: 'Respaldo / Antecedente',
+}
 
 const STATUS_META = {
   REGISTERED: {
@@ -46,10 +56,15 @@ function formatDate(value) {
 
 function DocumentDetailPage() {
   const { id } = useParams()
+  const { toast, showSuccess, showError, clearToast } = useFeedbackToast()
   const [document, setDocument] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [downloading, setDownloading] = useState(false)
+  const [relatedDocs, setRelatedDocs] = useState([])
+  const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [uploadingRelated, setUploadingRelated] = useState(false)
+  const [resultModal, setResultModal] = useState({ isOpen: false, type: 'success', title: '', message: '' })
 
   const handleDownload = async () => {
     if (!document) return
@@ -85,12 +100,74 @@ function DocumentDetailPage() {
     return () => { mounted = false }
   }, [id])
 
+  useEffect(() => {
+    if (!id) return
+    let mounted = true
+    getRelatedDocuments(id)
+      .then((data) => { if (mounted) setRelatedDocs(data) })
+      .catch(() => {})
+    return () => { mounted = false }
+  }, [id])
+
+  const handleUploadRelated = async (payload) => {
+    if (!id) return
+    setUploadingRelated(true)
+    try {
+      const newDoc = await uploadRelatedDocument(id, payload)
+      setRelatedDocs((prev) => [
+        ...prev,
+        { id: newDoc.id, related_document: newDoc, relation_type: payload.relation_type },
+      ])
+      setUploadModalOpen(false)
+      showSuccess('Archivo adjuntado correctamente')
+      setResultModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Adjunto guardado',
+        message: 'El archivo fue adjuntado y vinculado al documento correctamente.',
+      })
+    } catch (err) {
+      const message = getApiErrorMessage(err, 'No se pudo adjuntar el archivo')
+      showError(message)
+      setResultModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error al adjuntar',
+        message,
+      })
+    } finally {
+      setUploadingRelated(false)
+    }
+  }
+
   const statusMeta = document
     ? STATUS_META[document.status] || STATUS_META.REGISTERED
     : STATUS_META.REGISTERED
 
   return (
     <section className="mx-auto space-y-6">
+      <div className='fixed right-6 top-6 z-50'>
+        <FeedbackToast toast={toast} onClose={clearToast} />
+      </div>
+
+      {uploadingRelated ? (
+        <div className='fixed inset-0 z-50 flex items-center justify-center'>
+          <div className='absolute inset-0 bg-black/25 backdrop-blur-[1px]' />
+          <div className='relative flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-white px-8 py-7 shadow-2xl'>
+            <LoadingSpinner size={160} />
+            <p className='text-sm font-medium text-[var(--color-muted)]'>Adjuntando archivo...</p>
+          </div>
+        </div>
+      ) : null}
+
+      <ActionModal
+        isOpen={resultModal.isOpen}
+        type={resultModal.type}
+        title={resultModal.title}
+        message={resultModal.message}
+        onClose={() => setResultModal({ isOpen: false, type: 'success', title: '', message: '' })}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]">
         <div>
@@ -118,6 +195,7 @@ function DocumentDetailPage() {
           {error}
         </div>
       ) : document ? (
+        <>
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
 
           {/* Columna izquierda: Info del documento */}
@@ -152,7 +230,6 @@ function DocumentDetailPage() {
               </div>
             </div>
           </div>
-
           {/* Columna derecha: Metadata + Acciones */}
           <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
             <h3 className="text-sm font-semibold text-[var(--color-primary)]">Información</h3>
@@ -211,7 +288,88 @@ function DocumentDetailPage() {
           </div>
 
         </div>
+
+        {/* Sección de documentos relacionados / vinculados */}
+        <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-primary)]">Documentos vinculados</p>
+              <h3 className="mt-0.5 text-base font-bold">
+                {relatedDocs.length > 0 ? `${relatedDocs.length} adjunto${relatedDocs.length !== 1 ? 's' : ''}` : 'Sin adjuntos'}
+              </h3>
+            </div>
+            <button
+              className="inline-flex items-center gap-2 rounded-md border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 disabled:opacity-60 disabled:cursor-not-allowed"
+              type="button"
+              onClick={() => setUploadModalOpen(true)}
+              disabled={uploadingRelated}
+            >
+              <Paperclip size={15} />
+              Adjuntar
+            </button>
+          </div>
+
+          {relatedDocs.length === 0 ? (
+            <div className="mt-5 rounded-lg border border-dashed border-[var(--color-border)] py-8 text-center text-sm text-[var(--color-muted)]">
+              No hay documentos adjuntos vinculados a este documento todavía.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {relatedDocs.map((rel) => (
+                <div
+                  key={rel.id ?? rel.related_document?.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="rounded bg-white p-1.5 text-violet-600 border border-violet-100">
+                      <Paperclip size={14} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{rel.related_document?.title ?? 'Adjunto'}</p>
+                      <p className="text-xs text-[var(--color-muted)]">
+                        {RELATION_TYPE_LABELS[rel.relation_type] ?? rel.relation_type}
+                        {rel.related_document?.mime_type ? ` · ${rel.related_document.mime_type.split('/')[1]?.toUpperCase()}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {rel.related_document?.id ? (
+                      <button
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white"
+                        type="button"
+                        onClick={() => downloadDocument(rel.related_document.id, rel.related_document.drive_file_name || rel.related_document.title)}
+                      >
+                        <Download size={13} />
+                        Descargar
+                      </button>
+                    ) : null}
+                    {rel.related_document?.drive_web_view_link ? (
+                      <a
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white"
+                        href={rel.related_document.drive_web_view_link}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Abrir en Drive"
+                      >
+                        <ExternalLink size={13} />
+                        Drive
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        </>
+
       ) : null}
+
+      <UploadRelatedModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onConfirm={handleUploadRelated}
+      />
     </section>
   )
 }

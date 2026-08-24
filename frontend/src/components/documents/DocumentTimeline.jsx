@@ -6,6 +6,7 @@ import {
   FileText,
   Send,
   Upload,
+  Paperclip,
 } from 'lucide-react'
 
 // Mapa de acciones del backend a presentación visual
@@ -49,6 +50,14 @@ const ACTION_META = {
     bg: 'bg-sky-50',
     border: 'border-sky-200',
     dot: 'bg-sky-500',
+  },
+  RELATED_DOCUMENT_ADDED: {
+    label: 'Documento relacionado adjuntado',
+    Icon: Paperclip,
+    color: 'text-violet-600',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
   },
 }
 
