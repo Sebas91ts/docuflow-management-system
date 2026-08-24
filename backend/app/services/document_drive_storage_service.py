@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import re
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -31,22 +32,28 @@ class DocumentDriveStorageService:
     SCOPES = ["https://www.googleapis.com/auth/drive"]
 
     def __init__(self) -> None:
-        if not settings.GOOGLE_SERVICE_ACCOUNT_FILE:
-            raise ValueError("GOOGLE_SERVICE_ACCOUNT_FILE no esta configurado")
+        if not settings.GOOGLE_SERVICE_ACCOUNT_JSON:
+            raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON no está configurado")
 
-        credentials_path = Path(settings.GOOGLE_SERVICE_ACCOUNT_FILE)
-        if not credentials_path.is_absolute():
-            backend_root = Path(__file__).resolve().parents[2]
-            credentials_path = (backend_root / credentials_path).resolve()
+        try:
+            credentials_info = json.loads(settings.GOOGLE_SERVICE_ACCOUNT_JSON)
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                "GOOGLE_SERVICE_ACCOUNT_JSON no contiene un JSON válido"
+            ) from e
 
-        if not credentials_path.exists():
-            raise FileNotFoundError(f"No existe el archivo de credenciales: {credentials_path}")
-
-        credentials = service_account.Credentials.from_service_account_file(
-            str(credentials_path),
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_info,
             scopes=self.SCOPES,
         )
-        self.service = build("drive", "v3", credentials=credentials, cache_discovery=False)
+
+        self.service = build(
+            "drive",
+            "v3",
+            credentials=credentials,
+            cache_discovery=False,
+        )
+
         self.shared_drive_id = settings.GOOGLE_DRIVE_SHARED_DRIVE_ID
 
     def _slugify(self, value: str) -> str:

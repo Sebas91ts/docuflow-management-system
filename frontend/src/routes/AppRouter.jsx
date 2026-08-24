@@ -12,6 +12,7 @@ import DocumentsListPage from '../pages/dashboard/DocumentsListPage'
 import PendingPage from '../pages/dashboard/PendingPage'
 import UsersPage from '../pages/dashboard/UsersPage'
 import AuditPage from '../pages/dashboard/AuditPage'
+import TrazabilidadPage from '../pages/dashboard/TrazabilidadPage'
 
 function AppRouter() {
   return (
@@ -29,6 +30,8 @@ function AppRouter() {
             <Route path=":id" element={<DocumentDetailPage />} />
           </Route>
           <Route path="pending" element={<PendingPage />} />
+          <Route path="trazabilidad" element={<TrazabilidadPage />} />
+          <Route path="trazabilidad/:id" element={<TrazabilidadPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route element={<AdminRoute />}>
             <Route path="users" element={<UsersPage />} />

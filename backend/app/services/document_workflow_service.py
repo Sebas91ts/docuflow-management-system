@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.constants import DocumentConstants
 from app.models.document_assignment import DocumentAssignment
 from app.models.document_event import DocumentEvent
+from app.models.related_document import RelatedDocument
 from app.schemas.document import DocumentCreate
 from app.schemas.document_assignment import DocumentAssignmentCreate, DocumentAssignmentDerive
 from app.services.document_folder_service import DocumentFolderService
@@ -41,7 +42,9 @@ class DocumentWorkflowService:
         file: UploadFile,
         submission_mode: str,
         assignment_payload: DocumentAssignmentCreate | None = None,
+        extra_files: list[UploadFile] = [],
     ):
+        uploaded_refs = []
         stored_file = self.storage_service.store(file, title=payload.title)
 
         storage_ref = (
@@ -49,6 +52,7 @@ class DocumentWorkflowService:
             or getattr(stored_file, "file_id", None)
             or stored_file.web_view_link
         )
+        uploaded_refs.append(storage_ref)
 
         try:
             document_payload = payload.model_copy(
@@ -89,6 +93,105 @@ class DocumentWorkflowService:
             # Fuerza el INSERT y obtiene document.id
             self.db.flush()
 
+            # Evento inicial de registro
+            uploaded_event = DocumentEvent(
+                document_id=document.id,
+                user_id=uploaded_by_id,
+                action="UPLOADED",
+                previous_status=None,
+                new_status=status,
+                comment="Carga inicial del documento",
+            )
+            self.db.add(uploaded_event)
+
+            # Si se archiva directamente, registrar evento de archivado
+            if submission_mode == "archive":
+                archived_event = DocumentEvent(
+                    document_id=document.id,
+                    user_id=uploaded_by_id,
+                    action="ARCHIVED",
+                    previous_status=DocumentConstants.DOCUMENT_STATUS_REGISTERED,
+                    new_status=DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+                    comment="Archivado directamente al registrar",
+                )
+                self.db.add(archived_event)
+
+            # Procesar archivos adicionales / relacionados
+            for extra_file in extra_files:
+                stored_extra = self.storage_service.store(extra_file, title=extra_file.filename)
+                extra_ref = (
+                    getattr(stored_extra, "storage_ref", None)
+                    or getattr(stored_extra, "file_id", None)
+                    or stored_extra.web_view_link
+                )
+                uploaded_refs.append(extra_ref)
+
+                child_payload = DocumentCreate(
+                    title=extra_file.filename,
+                    description="Adjunto subido en el registro inicial",
+                    current_responsible_id=document.current_responsible_id,
+                )
+
+                child_doc = self.document_service.create(
+                    payload=child_payload,
+                    uploaded_by_id=uploaded_by_id,
+                    status=status,
+                    commit=False,
+                )
+
+                child_doc.drive_file_id = stored_extra.file_id
+                child_doc.drive_file_name = stored_extra.file_name
+                child_doc.drive_web_view_link = stored_extra.web_view_link
+                child_doc.drive_folder_id = getattr(stored_extra, "folder_id", None)
+                child_doc.drive_folder_path = getattr(stored_extra, "folder_path", None)
+                child_doc.mime_type = stored_extra.mime_type
+                child_doc.file_size = stored_extra.file_size
+                child_doc.folder_id = document.folder_id
+
+                self.db.flush()
+
+                # Crear relación
+                rel = RelatedDocument(
+                    parent_document_id=document.id,
+                    related_document_id=child_doc.id,
+                    relation_type="attachment",
+                    created_by_id=uploaded_by_id,
+                )
+                self.db.add(rel)
+
+                # Evento inicial del adjunto
+                child_event = DocumentEvent(
+                    document_id=child_doc.id,
+                    user_id=uploaded_by_id,
+                    action="UPLOADED",
+                    previous_status=None,
+                    new_status=status,
+                    comment="Registrado como documento relacionado",
+                )
+                self.db.add(child_event)
+
+                # Evento en el historial del padre
+                parent_event = DocumentEvent(
+                    document_id=document.id,
+                    user_id=uploaded_by_id,
+                    action="RELATED_DOCUMENT_ADDED",
+                    previous_status=status,
+                    new_status=status,
+                    comment=f"Se adjuntó documento relacionado (Anexo): {extra_file.filename}",
+                )
+                self.db.add(parent_event)
+
+                if submission_mode == "archive":
+                    child_archived_event = DocumentEvent(
+                        document_id=child_doc.id,
+                        user_id=uploaded_by_id,
+                        action="ARCHIVED",
+                        previous_status=DocumentConstants.DOCUMENT_STATUS_REGISTERED,
+                        new_status=DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+                        comment="Archivado directamente al registrar",
+                    )
+                    self.db.add(child_archived_event)
+
             assignment = None
             if assignment_payload is not None:
                 assignment_payload = assignment_payload.model_copy(
@@ -111,12 +214,11 @@ class DocumentWorkflowService:
 
         except Exception:
             self.db.rollback()
-
-            try:
-                self.storage_service.remove(storage_ref)
-            except Exception:
-                pass
-
+            for ref in uploaded_refs:
+                try:
+                    self.storage_service.remove(ref)
+                except Exception:
+                    pass
             raise
 
     def archive_assignment(
@@ -147,8 +249,34 @@ class DocumentWorkflowService:
             new_responsible_id=None,
             comment=comment,
         )
-
         self.db.add(event)
+
+        # Archivar también todos los documentos relacionados
+        related_links = self.db.query(RelatedDocument).filter(
+            RelatedDocument.parent_document_id == document.id
+        ).all()
+
+        for link in related_links:
+            child = link.related_document
+            if child and child.status != DocumentConstants.DOCUMENT_STATUS_ARCHIVED:
+                prev_child_status = child.status
+                prev_child_resp = child.current_responsible_id
+                
+                child.status = DocumentConstants.DOCUMENT_STATUS_ARCHIVED
+                child.current_responsible_id = None
+                
+                child_event = DocumentEvent(
+                    document_id=child.id,
+                    user_id=user_id,
+                    action="ARCHIVED",
+                    previous_status=prev_child_status,
+                    new_status=DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+                    previous_responsible_id=prev_child_resp,
+                    new_responsible_id=None,
+                    comment="Archivado automáticamente al archivar documento principal",
+                )
+                self.db.add(child_event)
+
         self.db.commit()
         self.db.refresh(assignment)
         return assignment
@@ -223,3 +351,91 @@ class DocumentWorkflowService:
         else:
             file_stream = self.storage_service.download(document.drive_file_name)
         return file_stream, document.drive_file_name, document.mime_type
+
+    def add_related_document(
+        self,
+        *,
+        parent_id: uuid.UUID,
+        file: UploadFile,
+        title: str,
+        description: str | None,
+        relation_type: str,
+        user_id: uuid.UUID,
+    ) -> Document:
+        """Sube un archivo relacionado y lo asocia transaccionalmente al documento padre."""
+        parent_doc = self.document_service.get_by_id(parent_id)
+        if not parent_doc:
+            raise ValueError("El documento principal no existe")
+
+        stored_file = self.storage_service.store(file, title=title)
+        storage_ref = (
+            getattr(stored_file, "storage_ref", None)
+            or getattr(stored_file, "file_id", None)
+            or stored_file.web_view_link
+        )
+
+        try:
+            child_payload = DocumentCreate(
+                title=title,
+                description=description,
+                current_responsible_id=parent_doc.current_responsible_id,
+            )
+
+            # status: se hereda el mismo estado del padre para consistencia en filtros y vistas
+            child_doc = self.document_service.create(
+                payload=child_payload,
+                uploaded_by_id=user_id,
+                status=parent_doc.status,
+                commit=False,
+            )
+
+            child_doc.drive_file_id = stored_file.file_id
+            child_doc.drive_file_name = stored_file.file_name
+            child_doc.drive_web_view_link = stored_file.web_view_link
+            child_doc.drive_folder_id = getattr(stored_file, "folder_id", None)
+            child_doc.drive_folder_path = getattr(stored_file, "folder_path", None)
+            child_doc.mime_type = stored_file.mime_type
+            child_doc.file_size = stored_file.file_size
+            child_doc.folder_id = parent_doc.folder_id
+
+            self.db.flush()
+
+            rel = RelatedDocument(
+                parent_document_id=parent_id,
+                related_document_id=child_doc.id,
+                relation_type=relation_type,
+                created_by_id=user_id,
+            )
+
+            # Evento inicial del adjunto
+            child_event = DocumentEvent(
+                document_id=child_doc.id,
+                user_id=user_id,
+                action="UPLOADED",
+                previous_status=None,
+                new_status=parent_doc.status,
+                comment=f"Registrado como documento relacionado ({relation_type})",
+            )
+
+            # Evento en el historial del padre
+            parent_event = DocumentEvent(
+                document_id=parent_id,
+                user_id=user_id,
+                action="RELATED_DOCUMENT_ADDED",
+                previous_status=parent_doc.status,
+                new_status=parent_doc.status,
+                comment=f"Se adjuntó documento relacionado ({relation_type}): {title}",
+            )
+
+            self.db.add(rel)
+            self.db.add(child_event)
+            self.db.add(parent_event)
+            self.db.commit()
+            return child_doc
+        except Exception:
+            self.db.rollback()
+            try:
+                self.storage_service.remove(storage_ref)
+            except Exception:
+                pass
+            raise

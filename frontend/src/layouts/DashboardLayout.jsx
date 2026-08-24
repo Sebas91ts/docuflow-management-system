@@ -5,7 +5,8 @@ import {
   Inbox,
   Users,
   ScrollText,
-  LogOut
+  LogOut,
+  Clock3
 } from 'lucide-react'
 
 import FeedbackToast from '../components/common/FeedbackToast'
@@ -17,7 +18,8 @@ const navigationItems = [
   { label: 'Crear documento', to: '/dashboard/documents/new', icon: FileText },
   { label: 'Ver documentos', to: '/dashboard/documents', icon: FileText },
   { label: 'Pendientes', to: '/dashboard/pending', icon: Inbox },
-  { label: 'Auditoria', to: '/dashboard/audit', icon: ScrollText }
+  { label: 'Trazabilidad', to: '/dashboard/trazabilidad', icon: Clock3 },
+  // { label: 'Auditoria', to: '/dashboard/audit', icon: ScrollText }
 ]
 
 const adminNavigationItems = [

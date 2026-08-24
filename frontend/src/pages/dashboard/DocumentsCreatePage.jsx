@@ -83,7 +83,8 @@ function DocumentsCreatePage() {
         assignment_due_date: shouldDerive
           ? assignmentForm.dueDate || null
           : null,
-        file: formState.selectedFile
+        file: formState.selectedFile,
+        extra_files: formState.extraFiles,
       })
 
       showSuccess(
@@ -164,6 +165,7 @@ function DocumentsCreatePage() {
             <DocumentDropzone
               fileInputRef={formState.fileInputRef}
               fileSummary={formState.fileSummary}
+              extraFilesSummary={formState.extraFilesSummary}
               isDragging={formState.isDragging}
               onBrowse={formState.openFilePicker}
               onFileChange={formState.handleFileInputChange}
@@ -171,6 +173,7 @@ function DocumentsCreatePage() {
               onDragEnter={() => formState.setIsDragging(true)}
               onDragLeave={() => formState.setIsDragging(false)}
               onClear={formState.clearFile}
+              onRemoveExtraFile={formState.removeExtraFile}
             />
           </div>
 
@@ -208,10 +211,10 @@ function DocumentsCreatePage() {
         </form>
 
         {submitting ? (
-          <div className='absolute inset-0 z-30 overflow-hidden rounded-lg'>
-            <div className='absolute inset-0 bg-black/20 backdrop-blur-[1px]' />
-            <div className='relative z-40 flex min-h-[360px] items-center justify-center px-6 py-10'>
-              <div className='flex flex-col items-center gap-3 rounded-lg border border-[var(--color-border)] bg-white/30 px-6 py-5 shadow-[var(--shadow-app)]'>
+          <div className='fixed inset-0 z-50'>
+            <div className='absolute inset-0 bg-black/30 backdrop-blur-[2px]' />
+            <div className='relative z-10 flex h-full items-center justify-center'>
+              <div className='flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-white px-8 py-7 shadow-2xl'>
                 <LoadingSpinner size={200} />
                 <p className='text-sm font-medium text-[var(--color-muted)]'>
                   Guardando documento...

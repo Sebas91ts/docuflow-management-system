@@ -47,6 +47,8 @@ class DocumentService:
         folder_id=None,
         created_from=None,
         created_to=None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> list[Document]:
         uploaded_by_user = aliased(User)
         responsible_user = aliased(User)
@@ -97,7 +99,13 @@ class DocumentService:
         if created_to:
             query = query.filter(Document.created_at <= created_to)
 
-        return query.order_by(desc(Document.created_at)).all()
+        query = query.order_by(desc(Document.created_at))
+        if limit is not None:
+            query = query.limit(limit)
+        if offset is not None:
+            query = query.offset(offset)
+
+        return query.all()
 
     def get_by_id(self, document_id) -> Document | None:
         return (

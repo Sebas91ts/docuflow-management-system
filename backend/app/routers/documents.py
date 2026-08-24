@@ -8,11 +8,13 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
 from app.routers.deps import get_current_user
-from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead
+from app.schemas.document import DocumentRead, DocumentUpdate, DocumentFolderRead, DocumentEventRead, RelatedDocumentRead
 from app.schemas.document import DocumentCreate
 from app.schemas.document_assignment import DocumentAssignmentCreate
 from app.services.document_service import DocumentService
 from app.services.document_workflow_service import DocumentWorkflowService
+from app.models.document_event import DocumentEvent
+from app.models.related_document import RelatedDocument
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -26,6 +28,8 @@ def list_documents(
     folder_id: uuid.UUID | None = Query(default=None),
     created_from: datetime | None = Query(default=None),
     created_to: datetime | None = Query(default=None),
+    limit: int | None = Query(default=10),
+    offset: int | None = Query(default=None),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
@@ -37,6 +41,8 @@ def list_documents(
         folder_id=folder_id,
         created_from=created_from,
         created_to=created_to,
+        limit=limit,
+        offset=offset,
     )
 
 @router.get("/folder", response_model=list[DocumentFolderRead], summary="Obtener carpetas")
@@ -46,6 +52,52 @@ def get_folder(
     _: User = Depends(get_current_user),
 ):
     return DocumentService(db).list_folders(parent_id=parent_id)
+
+@router.get("/dashboard/stats", summary="Estadísticas para el dashboard")
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.document import Document
+    from app.models.document_assignment import DocumentAssignment
+    from app.core.constants import DocumentConstants
+
+    total_docs = db.query(Document).filter(Document.deleted_at.is_(None)).count()
+    pending_count = db.query(DocumentAssignment).filter(
+        DocumentAssignment.assigned_to_id == current_user.id,
+        DocumentAssignment.status == "PENDING"
+    ).count()
+    in_progress_count = db.query(DocumentAssignment).filter(
+        DocumentAssignment.assigned_to_id == current_user.id,
+        DocumentAssignment.status == "IN_PROGRESS"
+    ).count()
+    archived_count = db.query(Document).filter(
+        Document.status == DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+        Document.deleted_at.is_(None)
+    ).count()
+
+    recent_documents = db.query(Document).filter(
+        Document.deleted_at.is_(None)
+    ).order_by(Document.created_at.desc()).limit(5).all()
+
+    recent_docs_list = [
+        {
+            "id": str(d.id),
+            "title": d.title,
+            "code": d.code,
+            "status": d.status,
+            "created_at": d.created_at.isoformat() if d.created_at else None,
+        }
+        for d in recent_documents
+    ]
+
+    return {
+        "total_documents": total_docs,
+        "pending_assignments": pending_count,
+        "in_progress_assignments": in_progress_count,
+        "archived_documents": archived_count,
+        "recent_documents": recent_docs_list,
+    }
 
 @router.get("/{document_id}", response_model=DocumentRead, summary="Obtener documento")
 def get_document(
@@ -69,6 +121,7 @@ def create_document(
     assignment_message: str | None = Form(default=None),
     assignment_due_date: date | None = Form(default=None),
     file: UploadFile = File(...),
+    extra_files: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -104,6 +157,7 @@ def create_document(
             file=file,
             submission_mode=submission_mode,
             assignment_payload=assignment_payload,
+            extra_files=extra_files,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -163,3 +217,60 @@ def download_document(
         )
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al descargar: {str(exc)}")
+
+
+@router.get("/{document_id}/timeline", response_model=list[DocumentEventRead], summary="Historial de trazabilidad del documento")
+def get_document_timeline(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    document = DocumentService(db).get_by_id(document_id)
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documento no encontrado")
+    events = (
+        db.query(DocumentEvent)
+        .filter(DocumentEvent.document_id == document_id)
+        .order_by(DocumentEvent.created_at.asc())
+        .all()
+    )
+    return events
+
+
+@router.post("/{document_id}/related", response_model=DocumentRead, status_code=status.HTTP_201_CREATED, summary="Adjuntar documento relacionado")
+def add_related_document(
+    document_id: uuid.UUID,
+    relation_type: str = Form(default="attachment"),
+    title: str | None = Form(default=None),
+    description: str | None = Form(default=None),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        resolved_title = title or file.filename
+        return DocumentWorkflowService(db).add_related_document(
+            parent_id=document_id,
+            file=file,
+            title=resolved_title,
+            description=description,
+            relation_type=relation_type,
+            user_id=current_user.id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get("/{document_id}/related", response_model=list[RelatedDocumentRead], summary="Listar documentos relacionados")
+def get_related_documents(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    relations = (
+        db.query(RelatedDocument)
+        .filter(RelatedDocument.parent_document_id == document_id)
+        .order_by(RelatedDocument.created_at.asc())
+        .all()
+    )
+    return relations
