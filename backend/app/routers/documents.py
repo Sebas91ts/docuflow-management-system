@@ -53,6 +53,52 @@ def get_folder(
 ):
     return DocumentService(db).list_folders(parent_id=parent_id)
 
+@router.get("/dashboard/stats", summary="Estadísticas para el dashboard")
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.document import Document
+    from app.models.document_assignment import DocumentAssignment
+    from app.core.constants import DocumentConstants
+
+    total_docs = db.query(Document).filter(Document.deleted_at.is_(None)).count()
+    pending_count = db.query(DocumentAssignment).filter(
+        DocumentAssignment.assigned_to_id == current_user.id,
+        DocumentAssignment.status == "PENDING"
+    ).count()
+    in_progress_count = db.query(DocumentAssignment).filter(
+        DocumentAssignment.assigned_to_id == current_user.id,
+        DocumentAssignment.status == "IN_PROGRESS"
+    ).count()
+    archived_count = db.query(Document).filter(
+        Document.status == DocumentConstants.DOCUMENT_STATUS_ARCHIVED,
+        Document.deleted_at.is_(None)
+    ).count()
+
+    recent_documents = db.query(Document).filter(
+        Document.deleted_at.is_(None)
+    ).order_by(Document.created_at.desc()).limit(5).all()
+
+    recent_docs_list = [
+        {
+            "id": str(d.id),
+            "title": d.title,
+            "code": d.code,
+            "status": d.status,
+            "created_at": d.created_at.isoformat() if d.created_at else None,
+        }
+        for d in recent_documents
+    ]
+
+    return {
+        "total_documents": total_docs,
+        "pending_assignments": pending_count,
+        "in_progress_assignments": in_progress_count,
+        "archived_documents": archived_count,
+        "recent_documents": recent_docs_list,
+    }
+
 @router.get("/{document_id}", response_model=DocumentRead, summary="Obtener documento")
 def get_document(
     document_id: uuid.UUID,

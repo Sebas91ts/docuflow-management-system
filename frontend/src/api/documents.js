@@ -147,4 +147,9 @@ export async function getRelatedDocuments(documentId) {
   return data
 }
 
+export async function getDashboardStats() {
+  const { data } = await apiClient.get('/documents/dashboard/stats')
+  return data
+}
+
 
