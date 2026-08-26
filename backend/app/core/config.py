@@ -16,6 +16,15 @@ class Settings(BaseSettings):
     GOOGLE_DRIVE_ROOT_FOLDER_ID: str | None = None
     GOOGLE_DRIVE_INSTITUTION_NAME: str = "Gestion"
     GOOGLE_DRIVE_STORAGE_MODE: str = "local"
+    CORS_ORIGINS: str = ""
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.CORS_ORIGINS.split(",")
+            if origin.strip()
+        ]
 
     class Config:
         env_file = ".env"
