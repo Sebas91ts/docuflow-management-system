@@ -1,6 +1,6 @@
 function DocumentsTable({ documents, loading }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
+    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-[var(--color-primary)]">Recientes</p>
@@ -36,7 +36,7 @@ function DocumentsTable({ documents, loading }) {
                     <div className="text-sm text-[var(--color-muted)]">{document.description || 'Sin descripcion'}</div>
                   </td>
                   <td className="px-3 py-3">
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-text)]">
+                    <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text)]">
                       {document.status}
                     </span>
                   </td>

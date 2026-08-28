@@ -44,7 +44,7 @@ function LoginForm() {
           Usuario
         </label>
         <input
-          className="h-11 w-full rounded-md border border-[var(--color-border)] bg-white px-3 text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary-soft)]"
+          className="h-11 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary-soft)]"
           id="username"
           name="username"
           type="text"
@@ -60,7 +60,7 @@ function LoginForm() {
           Contrasena
         </label>
         <input
-          className="h-11 w-full rounded-md border border-[var(--color-border)] bg-white px-3 text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary-soft)]"
+          className="h-11 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary-soft)]"
           id="password"
           name="password"
           type="password"

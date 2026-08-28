@@ -21,7 +21,7 @@ function DocumentAssignmentSection({ value, onChange, users, loading }) {
           </label>
           <select
             id='assigned_to_id'
-            className='h-11 w-full rounded-md border border-[var(--color-border)] bg-white px-3 text-sm outline-none transition focus:border-[var(--color-primary)]'
+            className='h-11 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm outline-none transition focus:border-[var(--color-primary)]'
             value={value.assignedToId}
             onChange={(event) => onChange('assignedToId', event.target.value)}
             disabled={loading}
@@ -60,7 +60,7 @@ function DocumentAssignmentSection({ value, onChange, users, loading }) {
           </label>
           <textarea
             id='assignment_message'
-            className='min-h-24 w-full bg-white rounded-md border border-[var(--color-border)] px-3 py-2 text-sm outline-none transition focus:border-[var(--color-primary)]'
+            className='min-h-24 w-full bg-[var(--color-surface)] rounded-md border border-[var(--color-border)] px-3 py-2 text-sm outline-none transition focus:border-[var(--color-primary)]'
             value={value.message}
             onChange={(event) => onChange('message', event.target.value)}
             placeholder='Agrega una indicación breve para la persona responsable'

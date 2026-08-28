@@ -100,7 +100,7 @@ function TrazabilidadPage() {
     return (
       <section className='mx-auto space-y-6'>
         {/* Header */}
-        <div className='flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]'>
+        <div className='flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)]'>
           <div className='flex items-center gap-3'>
             <div className='rounded-md bg-[var(--color-primary-soft)] p-2.5 text-[var(--color-primary)]'>
               <Clock3 size={20} />
@@ -111,7 +111,7 @@ function TrazabilidadPage() {
             </div>
           </div>
           <button
-            className='inline-flex h-10 items-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-white'
+            className='inline-flex h-10 items-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-sm font-semibold transition hover:border-[var(--color-primary)] bg-[var(--color-surface)]'
             type='button'
             onClick={() => navigate(-1)}
           >
@@ -121,7 +121,7 @@ function TrazabilidadPage() {
         </div>
 
         {timelineLoading ? (
-          <div className='flex min-h-[320px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-white shadow-[var(--shadow-app)]'>
+          <div className='flex min-h-[320px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-app)]'>
             <div className='flex flex-col items-center gap-3 text-sm text-[var(--color-muted)]'>
               <LoadingSpinner size={32} />
               <p>Cargando trazabilidad...</p>
@@ -134,12 +134,12 @@ function TrazabilidadPage() {
         ) : documentInfo ? (
           <div className='grid gap-6 lg:grid-cols-[1.5fr_1fr]'>
             {/* Columna Izquierda: La Línea de Tiempo */}
-            <div className='rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]'>
+            <div className='rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]'>
               <DocumentTimeline events={timeline} loading={false} />
             </div>
 
             {/* Columna Derecha: Tarjeta informativa rápida del documento */}
-            <div className='rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)] self-start space-y-4'>
+            <div className='rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)] self-start space-y-4'>
               <h3 className='text-sm font-semibold text-[var(--color-primary)] uppercase tracking-wider'>
                 Detalles del documento
               </h3>
@@ -174,7 +174,7 @@ function TrazabilidadPage() {
 
               <div className='pt-2 border-t border-[var(--color-border)]'>
                 <Link
-                  className='inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-xs font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white'
+                  className='inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-xs font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-[var(--color-surface)]'
                   to={`/dashboard/documents/${documentInfo.id}`}
                 >
                   Ver detalle completo
@@ -191,7 +191,7 @@ function TrazabilidadPage() {
   return (
     <section className='mx-auto space-y-6'>
       {/* Header */}
-      <div className='flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]'>
+      <div className='flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)]'>
         <div className='flex items-center gap-3'>
           <div className='rounded-md bg-[var(--color-primary-soft)] p-2.5 text-[var(--color-primary)]'>
             <Clock3 size={20} />
@@ -216,7 +216,7 @@ function TrazabilidadPage() {
       </div>
 
       {/* Contenido principal */}
-      <div className='rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]'>
+      <div className='rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]'>
         <h2 className='text-lg font-bold mb-4'>Selecciona un documento para ver su trazabilidad</h2>
 
         {listLoading ? (

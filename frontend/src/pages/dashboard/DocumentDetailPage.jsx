@@ -146,15 +146,15 @@ function DocumentDetailPage() {
 
   return (
     <section className="mx-auto space-y-6">
-      <div className='fixed right-6 top-6 z-50'>
+      <div className='fixed right-4 top-16 z-50 lg:right-6 lg:top-6'>
         <FeedbackToast toast={toast} onClose={clearToast} />
       </div>
 
       {uploadingRelated ? (
         <div className='fixed inset-0 z-50 flex items-center justify-center'>
           <div className='absolute inset-0 bg-black/25 backdrop-blur-[1px]' />
-          <div className='relative flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-white px-8 py-7 shadow-2xl'>
-            <LoadingSpinner size={160} />
+          <div className='relative flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-7 shadow-2xl'>
+            <LoadingSpinner size={120} />
             <p className='text-sm font-medium text-[var(--color-muted)]'>Adjuntando archivo...</p>
           </div>
         </div>
@@ -169,7 +169,7 @@ function DocumentDetailPage() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]">
+      <div className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)]">
         <div>
           <p className="text-sm font-semibold text-[var(--color-primary)]">Documentos</p>
           <h1 className="mt-1 text-2xl font-bold">Detalle del documento</h1>
@@ -184,7 +184,7 @@ function DocumentDetailPage() {
       </div>
 
       {loading ? (
-        <div className="flex min-h-[280px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-white shadow-[var(--shadow-app)]">
+        <div className="flex min-h-[280px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-app)]">
           <div className="flex flex-col items-center gap-3 text-sm text-[var(--color-muted)]">
             <LoadingSpinner size={32} />
             <p>Cargando documento...</p>
@@ -199,7 +199,7 @@ function DocumentDetailPage() {
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
 
           {/* Columna izquierda: Info del documento */}
-          <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)] self-start">
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)] self-start">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 <div className="rounded-md bg-[var(--color-page)] p-3 text-[var(--color-primary)]">
@@ -231,7 +231,7 @@ function DocumentDetailPage() {
             </div>
           </div>
           {/* Columna derecha: Metadata + Acciones */}
-          <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]">
             <h3 className="text-sm font-semibold text-[var(--color-primary)]">Información</h3>
             <div className="mt-4 space-y-4 text-sm">
               <div>
@@ -277,7 +277,7 @@ function DocumentDetailPage() {
                   </>
                 ) : null}
                 <Link
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-sm font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-4 text-sm font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-[var(--color-surface)]"
                   to={`/dashboard/trazabilidad/${document.id}`}
                 >
                   <Clock3 size={16} />
@@ -290,7 +290,7 @@ function DocumentDetailPage() {
         </div>
 
         {/* Sección de documentos relacionados / vinculados */}
-        <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-[var(--color-primary)]">Documentos vinculados</p>
@@ -318,10 +318,10 @@ function DocumentDetailPage() {
               {relatedDocs.map((rel) => (
                 <div
                   key={rel.id ?? rel.related_document?.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="rounded bg-white p-1.5 text-violet-600 border border-violet-100">
+                    <div className="rounded bg-[var(--color-surface)] p-1.5 text-violet-600 border border-violet-100">
                       <Paperclip size={14} />
                     </div>
                     <div className="min-w-0">
@@ -335,7 +335,7 @@ function DocumentDetailPage() {
                   <div className="flex shrink-0 items-center gap-2">
                     {rel.related_document?.id ? (
                       <button
-                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-[var(--color-surface)]"
                         type="button"
                         onClick={() => downloadDocument(rel.related_document.id, rel.related_document.drive_file_name || rel.related_document.title)}
                       >
@@ -345,7 +345,7 @@ function DocumentDetailPage() {
                     ) : null}
                     {rel.related_document?.drive_web_view_link ? (
                       <a
-                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-white"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] bg-[var(--color-surface)]"
                         href={rel.related_document.drive_web_view_link}
                         target="_blank"
                         rel="noreferrer"

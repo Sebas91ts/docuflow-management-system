@@ -93,7 +93,7 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
   return (
     <>
       {/* Toast global para esta tarjeta */}
-      <div className='fixed right-6 top-6 z-[60]'>
+      <div className='fixed right-4 top-16 z-[60] lg:right-6 lg:top-6'>
         <FeedbackToast toast={toast} onClose={clearToast} />
       </div>
 
@@ -101,8 +101,8 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
       {uploadingRelated ? (
         <div className='fixed inset-0 z-[55] flex items-center justify-center'>
           <div className='absolute inset-0 bg-black/25 backdrop-blur-[2px]' />
-          <div className='relative flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-white px-8 py-7 shadow-2xl'>
-            <LoadingSpinner size={160} />
+          <div className='relative flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-7 shadow-2xl'>
+            <LoadingSpinner size={120} />
             <p className='text-sm font-medium text-[var(--color-muted)]'>Adjuntando archivo...</p>
           </div>
         </div>
@@ -122,7 +122,7 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
         onClose={() => setResultModal({ isOpen: false, type: 'success', title: '', message: '' })}
       />
 
-      <article className='rounded-xl border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)] transition hover:border-[var(--color-primary)]/50 hover:shadow-md'>
+      <article className='rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)] transition hover:border-[var(--color-primary)]/50 hover:shadow-md'>
         {/* Header */}
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div className='min-w-0'>
@@ -184,7 +184,7 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
             {relatedDocs.map((rel) => (
               <div
                 key={rel.id ?? rel.related_document?.id}
-                className='flex items-center justify-between gap-2 rounded-md bg-white border border-violet-100 px-3 py-2'
+                className='flex items-center justify-between gap-2 rounded-md bg-[var(--color-surface)] border border-violet-100 px-3 py-2'
               >
                 <div className='min-w-0'>
                   <p className='text-xs font-medium truncate'>
@@ -240,7 +240,7 @@ function PendingCard({ assignment, onAttend, onDerive, onArchive, busy = false }
           {/* Ver trazabilidad */}
           <button
             id={`btn-timeline-${assignment.id}`}
-            className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50'
+            className='inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50'
             type='button'
             onClick={() => navigate(`/dashboard/trazabilidad/${doc.id}`)}
             disabled={busy || !doc.id}

@@ -20,7 +20,7 @@ function UserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
-      <div className="w-full max-w-xl rounded-xl border border-[var(--color-border)] bg-white shadow-[var(--shadow-app)]">
+      <div className="w-full max-w-xl rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-app)]">
         <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-[var(--color-primary)]">{title}</p>

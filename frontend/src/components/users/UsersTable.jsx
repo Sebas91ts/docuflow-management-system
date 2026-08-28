@@ -2,7 +2,7 @@ import { Pencil, UserX, UserCheck } from 'lucide-react'
 
 function UsersTable({ users, loading, onEdit, onDeactivate, onActive }) {
   return (
-    <div className='rounded-lg border border-(--color-border) bg-white p-6 shadw-(--shadow-app)'>
+    <div className='rounded-lg border border-(--color-border) bg-[var(--color-surface)] p-6 shadow-(--shadow-app)'>
       <div className='mb-5 flex items-center justify-between gap-3'>
         <div>
           <p className='text-sm font-semibold text-(--color-primary)'>
@@ -79,7 +79,7 @@ function UsersTable({ users, loading, onEdit, onDeactivate, onActive }) {
                       {/* boton para activar */}
                       {!user.is_active && (
                         <button
-                          className='inlineflex items-center gap-2 rounded-md border border-green-200 px-3 py-2 text-sm font-medium text-green-700 transition hover:border-green-300 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60'
+                          className='inline-flex items-center gap-2 rounded-md border border-green-200 px-3 py-2 text-sm font-medium text-green-700 transition hover:border-green-300 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60'
                           type='button'
                           onClick={() => onActive(user.id)}
                           disabled={user.is_active}
