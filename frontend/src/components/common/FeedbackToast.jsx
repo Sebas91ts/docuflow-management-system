@@ -24,7 +24,7 @@ function FeedbackToast({ toast, onClose, onAction }) {
   return (
     <div
       className={[
-        'pointer-events-auto flex max-w-md items-center gap-3 rounded-lg border px-4 py-3 shadow-[var(--shadow-app)] transition-all',
+        'pointer-events-auto flex w-[min(28rem,calc(100vw-3rem))] items-center gap-3 rounded-lg border px-4 py-3 shadow-[var(--shadow-app)] transition-all',
         toneStyles[toast.type] ?? toneStyles.success,
       ].join(' ')}
       role="status"

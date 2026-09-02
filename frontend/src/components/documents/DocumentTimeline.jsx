@@ -166,7 +166,7 @@ function TimelineEvent({ event, isLast }) {
           {/* Cambio de estado */}
           {event.previous_status && event.new_status && event.previous_status !== event.new_status && (
             <div className='mt-2 flex items-center gap-2 text-xs text-[var(--color-muted)]'>
-              <span className='rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 font-medium'>
+              <span className='rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-0.5 font-medium'>
                 {STATUS_LABELS[event.previous_status] ?? event.previous_status}
               </span>
               <ArrowRight size={11} />

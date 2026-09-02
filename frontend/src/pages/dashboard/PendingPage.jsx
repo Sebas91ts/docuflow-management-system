@@ -82,9 +82,9 @@ function PendingPage() {
   }
 
   return (
-    <section className='space-y-5 rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]'>
+    <section className='space-y-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]'>
       {/* Toast de feedback local (acciones en esta página) */}
-      <div className='fixed right-6 top-6 z-50 pointer-events-none'>
+      <div className='fixed right-4 top-16 z-50 pointer-events-none lg:right-6 lg:top-6'>
         <FeedbackToast toast={toast} onClose={clearToast} />
       </div>
 
@@ -124,7 +124,6 @@ function PendingPage() {
         </div>
       ) : (
         <div className='grid gap-4'>
-          {console.log(assignments)}
           {assignments.map((assignment) => (
             <PendingCard
               key={assignment.id}

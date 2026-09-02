@@ -35,7 +35,7 @@ function DeriveModal({ isOpen, onClose, onConfirm, users = [], loading = false }
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={handleClose} />
-      <div className='relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white shadow-2xl'>
+      <div className='relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl'>
         <div className='flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4'>
           <div>
             <p className='text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]'>
@@ -65,7 +65,7 @@ function DeriveModal({ isOpen, onClose, onConfirm, users = [], loading = false }
             ) : (
               <select
                 id='derive-user'
-                className='h-11 w-full rounded-md border border-[var(--color-border)] px-3 text-sm outline-none transition focus:border-[var(--color-primary)] bg-white'
+                className='h-11 w-full rounded-md border border-[var(--color-border)] px-3 text-sm outline-none transition focus:border-[var(--color-primary)] bg-[var(--color-surface)]'
                 value={form.assigned_to_id}
                 onChange={(e) => handleChange('assigned_to_id', e.target.value)}
                 required

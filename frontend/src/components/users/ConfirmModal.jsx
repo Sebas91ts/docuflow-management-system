@@ -16,7 +16,7 @@ function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
-      <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white shadow-[var(--shadow-app)]">
+      <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-app)]">
         <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-6 py-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600">

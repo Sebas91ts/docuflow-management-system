@@ -2,7 +2,7 @@ import { Plus, RefreshCw } from 'lucide-react'
 
 function UsersHeader({ onRefresh, onCreate, error, success }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]">
+    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-[var(--color-primary)]">Usuarios</p>

@@ -11,7 +11,6 @@ import {
   PlusCircle,
   ArrowUpRight,
   ArrowRight,
-  TrendingUp,
   History
 } from 'lucide-react'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
@@ -53,7 +52,7 @@ function DashboardHomePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-white shadow-[var(--shadow-app)]">
+      <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-app)]">
         <div className="flex flex-col items-center gap-3 text-sm text-[var(--color-muted)]">
           <LoadingSpinner size={36} />
           <p>Cargando resumen del dashboard...</p>
@@ -91,7 +90,7 @@ function DashboardHomePage() {
         {/* Card 1: Pendientes */}
         <button
           onClick={() => navigate('/dashboard/pending')}
-          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-white p-5 text-left shadow-[var(--shadow-app)] transition hover:border-amber-300 hover:shadow-md group"
+          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-left shadow-[var(--shadow-app)] transition hover:border-amber-300 hover:shadow-md group"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:scale-110">
             <Inbox size={22} />
@@ -108,7 +107,7 @@ function DashboardHomePage() {
         {/* Card 2: En atención */}
         <button
           onClick={() => navigate('/dashboard/pending')}
-          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-white p-5 text-left shadow-[var(--shadow-app)] transition hover:border-blue-300 hover:shadow-md group"
+          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-left shadow-[var(--shadow-app)] transition hover:border-blue-300 hover:shadow-md group"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition group-hover:scale-110">
             <Clock3 size={22} />
@@ -125,7 +124,7 @@ function DashboardHomePage() {
         {/* Card 3: Total documentos */}
         <button
           onClick={() => navigate('/dashboard/documents')}
-          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-white p-5 text-left shadow-[var(--shadow-app)] transition hover:border-sky-300 hover:shadow-md group"
+          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-left shadow-[var(--shadow-app)] transition hover:border-sky-300 hover:shadow-md group"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600 transition group-hover:scale-110">
             <FileText size={22} />
@@ -142,7 +141,7 @@ function DashboardHomePage() {
         {/* Card 4: Finalizados */}
         <button
           onClick={() => navigate('/dashboard/documents')}
-          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-white p-5 text-left shadow-[var(--shadow-app)] transition hover:border-emerald-300 hover:shadow-md group"
+          className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-left shadow-[var(--shadow-app)] transition hover:border-emerald-300 hover:shadow-md group"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:scale-110">
             <CheckCircle2 size={22} />
@@ -159,7 +158,7 @@ function DashboardHomePage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
         {/* Accesos rápidos / Acciones recomendadas */}
-        <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]">
+        <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)]">
           <div>
             <h2 className="text-sm font-semibold text-[var(--color-primary)]">Accesos Rápidos</h2>
             <p className="text-xs text-[var(--color-muted)] mt-0.5">Acciones clave del sistema documental</p>
@@ -217,7 +216,7 @@ function DashboardHomePage() {
         </div>
 
         {/* Últimos documentos registrados */}
-        <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-app)]">
+        <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-app)]">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-[var(--color-primary)]">Últimos Documentos</h2>

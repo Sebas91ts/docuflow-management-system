@@ -122,13 +122,13 @@ function DocumentsCreatePage() {
 
   return (
     <section className='mx-auto space-y-6'>
-      <div className='fixed right-6 top-6 z-50'>
+      <div className='fixed right-4 top-16 z-50 lg:right-6 lg:top-6'>
         <FeedbackToast toast={toast} onClose={clearToast} />
       </div>
 
       <DocumentsHeader mode='create' />
 
-      <div className='relative rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-app)]'>
+      <div className='relative rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]'>
         <form className='space-y-6' onSubmit={handleSubmit}>
           <div className='grid gap-6 lg:grid-cols-[1fr_0.95fr]'>
             <div className='space-y-6'>
@@ -214,8 +214,8 @@ function DocumentsCreatePage() {
           <div className='fixed inset-0 z-50'>
             <div className='absolute inset-0 bg-black/30 backdrop-blur-[2px]' />
             <div className='relative z-10 flex h-full items-center justify-center'>
-              <div className='flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-white px-8 py-7 shadow-2xl'>
-                <LoadingSpinner size={200} />
+              <div className='flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-7 shadow-2xl'>
+                <LoadingSpinner size={120} />
                 <p className='text-sm font-medium text-[var(--color-muted)]'>
                   Guardando documento...
                 </p>

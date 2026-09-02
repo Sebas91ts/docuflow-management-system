@@ -34,7 +34,7 @@ function DocumentsListPage() {
         onApply={explorer.applyFilters}
         onClear={explorer.clearFilters}
       />
-      <div className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 shadow-[var(--shadow-app)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-[var(--shadow-app)]">
         <p className="text-sm text-[var(--color-muted)]">
           {explorer.searchMode === 'search'
             ? 'La búsqueda y los filtros se aplican en toda la base de documentos.'

@@ -15,7 +15,7 @@ function DocumentDropzone({
 }) {
   const borderStyle = isDragging
     ? 'border-[var(--color-primary)] bg-[var(--color-primary-soft)]'
-    : 'border-dashed border-[var(--color-border)] bg-white'
+    : 'border-dashed border-[var(--color-border)] bg-[var(--color-surface)]'
 
   return (
     <div className="space-y-3">
@@ -94,7 +94,7 @@ function DocumentDropzone({
             {extraFilesSummary.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-start justify-between gap-3 rounded-lg border border-[var(--color-border)]/60 bg-white px-3.5 py-2.5"
+                className="flex items-start justify-between gap-3 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-surface)] px-3.5 py-2.5"
               >
                 <div className="flex items-start gap-2.5">
                   <div className="mt-0.5 text-[var(--color-muted)]">

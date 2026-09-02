@@ -23,7 +23,7 @@ function ActionModal({ isOpen, type = 'success', title, message, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
-      <div className="w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-white px-6 py-7 text-center shadow-[var(--shadow-app)]">
+      <div className="w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-7 text-center shadow-[var(--shadow-app)]">
         <div className="flex justify-center">
           <div className={`flex h-24 w-24 items-center justify-center rounded-full border-8 ${type === 'error' ? 'border-rose-100 bg-rose-50 text-rose-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600'}`}>
             <Icon size={46} strokeWidth={2.4} />

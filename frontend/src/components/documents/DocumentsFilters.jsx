@@ -1,7 +1,7 @@
 function DocumentsFilters({ filters, onChange, onApply, onClear }) {
   return (
     <form
-      className="rounded-lg border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-app)]"
+      className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-app)]"
       onSubmit={(event) => {
         event.preventDefault()
         onApply()
@@ -75,7 +75,7 @@ function DocumentsFilters({ filters, onChange, onApply, onClear }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-end gap-3">
+      <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--color-border)] px-4 text-sm font-semibold transition hover:border-[var(--color-primary)]"

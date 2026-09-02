@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Upload, File, Send } from 'lucide-react'
+import { X, Upload, Send } from 'lucide-react'
 
 const RELATION_TYPES = [
   { value: 'attachment', label: 'Anexo / Adjunto' },
@@ -64,7 +64,7 @@ function UploadRelatedModal({ isOpen, onClose, onConfirm }) {
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <button className='absolute inset-0 bg-black/45 backdrop-blur-sm' onClick={handleClose} />
-      <div className='relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white shadow-2xl transition-all duration-200'>
+      <div className='relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl transition-all duration-200'>
         <div className='flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4'>
           <div>
             <p className='text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]'>
@@ -137,7 +137,7 @@ function UploadRelatedModal({ isOpen, onClose, onConfirm }) {
             </label>
             <select
               id='rel-type'
-              className='h-11 w-full rounded-md border border-[var(--color-border)] px-3 text-sm outline-none transition focus:border-[var(--color-primary)] bg-white'
+              className='h-11 w-full rounded-md border border-[var(--color-border)] px-3 text-sm outline-none transition focus:border-[var(--color-primary)] bg-[var(--color-surface)]'
               value={relationType}
               onChange={(e) => setRelationType(e.target.value)}
               disabled={busy}

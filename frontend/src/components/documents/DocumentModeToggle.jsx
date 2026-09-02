@@ -32,7 +32,7 @@ function DocumentModeToggle({ value, onChange }) {
                 'cursor-pointer rounded-lg border p-4 transition',
                 isActive
                   ? 'border-[var(--color-primary)] bg-[var(--color-primary-soft)]'
-                  : 'border-[var(--color-border)] bg-white hover:border-[var(--color-primary)]',
+                  : 'border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)]',
               ].join(' ')}
             >
               <input
