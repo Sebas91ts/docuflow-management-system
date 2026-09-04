@@ -128,9 +128,9 @@ function DocumentsCreatePage() {
 
       <DocumentsHeader mode='create' />
 
-      <div className='relative rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-app)]'>
+      <div className='relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-app)] sm:p-6'>
         <form className='space-y-6' onSubmit={handleSubmit}>
-          <div className='grid gap-6 lg:grid-cols-[1fr_0.95fr]'>
+          <div className='grid min-w-0 overflow-hidden gap-6 lg:grid-cols-[1fr_0.95fr]'>
             <div className='space-y-6'>
               <div className='space-y-2'>
                 <label className='text-sm font-medium' htmlFor='title'>
