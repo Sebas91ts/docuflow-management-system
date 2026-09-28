@@ -18,7 +18,7 @@ function DocumentDropzone({
     : 'border-dashed border-[var(--color-border)] bg-[var(--color-surface)]'
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       <div>
         <label className="text-sm font-medium">Archivos</label>
         <p className="mt-1 text-sm text-[var(--color-muted)]">
@@ -36,7 +36,7 @@ function DocumentDropzone({
 
       <button
         className={[
-          'flex w-full flex-col items-center justify-center gap-3 rounded-xl border px-6 py-10 text-center transition',
+          'flex min-w-0 w-full flex-col items-center justify-center gap-3 rounded-xl border px-4 py-6 text-center transition sm:px-6 sm:py-10',
           borderStyle,
         ].join(' ')}
         type="button"
@@ -46,12 +46,12 @@ function DocumentDropzone({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary)] text-white">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shrink-0">
           <Upload size={20} />
         </div>
-        <div>
-          <p className="text-sm font-semibold">Suelta tus archivos o haz clic para buscar</p>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">PDF, imagen o documento de oficina (puedes seleccionar varios).</p>
+        <div className="min-w-0 w-full">
+          <p className="text-sm font-semibold break-words">Suelta tus archivos o haz clic para buscar</p>
+          <p className="mt-1 text-sm text-[var(--color-muted)] break-words">PDF, imagen o documento de oficina (puedes seleccionar varios).</p>
         </div>
       </button>
 
@@ -61,20 +61,20 @@ function DocumentDropzone({
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]">
             Documento Principal
           </p>
-          <div className="flex items-start justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-[var(--color-primary)]">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-page)] px-4 py-3">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <div className="mt-0.5 shrink-0 text-[var(--color-primary)]">
                 <File size={18} />
               </div>
-              <div>
-                <p className="text-sm font-semibold">{fileSummary.name}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold break-words">{fileSummary.name}</p>
                 <p className="text-sm text-[var(--color-muted)]">
                   {(fileSummary.size / 1024).toFixed(1)} KB · {fileSummary.type}
                 </p>
               </div>
             </div>
             <button
-              className="text-sm font-semibold text-[var(--color-primary)] transition hover:underline"
+              className="shrink-0 text-sm font-semibold text-[var(--color-primary)] transition hover:underline"
               type="button"
               onClick={onClear}
             >
@@ -94,14 +94,14 @@ function DocumentDropzone({
             {extraFilesSummary.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-start justify-between gap-3 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-surface)] px-3.5 py-2.5"
+                className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-surface)] px-3.5 py-2.5"
               >
-                <div className="flex items-start gap-2.5">
-                  <div className="mt-0.5 text-[var(--color-muted)]">
+                <div className="flex min-w-0 flex-1 items-start gap-2.5">
+                  <div className="mt-0.5 shrink-0 text-[var(--color-muted)]">
                     <File size={16} />
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--color-text)] truncate max-w-xs sm:max-w-md">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-[var(--color-text)] break-words">
                       {file.name}
                     </p>
                     <p className="text-[10px] text-[var(--color-muted)]">
@@ -110,7 +110,7 @@ function DocumentDropzone({
                   </div>
                 </div>
                 <button
-                  className="rounded p-1 text-[var(--color-muted)] transition hover:bg-[var(--color-page)] hover:text-[var(--color-primary)]"
+                  className="shrink-0 rounded p-1 text-[var(--color-muted)] transition hover:bg-[var(--color-page)] hover:text-[var(--color-primary)]"
                   type="button"
                   onClick={() => onRemoveExtraFile(index)}
                   title="Quitar de relacionados"
